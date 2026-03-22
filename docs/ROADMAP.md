@@ -101,13 +101,14 @@ Enterprises, multi-tenant SaaS providers
 
 ---
 
-## Version Terminology
+## Documentation
 
-- **v1** = Full vision (REST API server, multi-source, multi-tenant) - See [PRD](design/v1/mneme-v1-prd.md)
-- **v2** = Milestone 1 implementation (local library) - See [Implementation](design/v2/IMPLEMENTATION_SUMMARY.md)
-- **Milestones** = Phased delivery (M1 → M2 → M3)
+**Unified Design Docs**: All design documentation unified at `/docs/design/`
+- [PRD.md](design/PRD.md) - Product requirements (all milestones)
+- [ARCHITECTURE.md](design/ARCHITECTURE.md) - System architecture (M1-M3)
+- [milestones/M1/](design/milestones/M1/) - Milestone 1 implementation details
 
-**Relationship**: v2 is the first milestone toward delivering the full v1 vision.
+**Note**: Old `v1/` and `v2/` folders deprecated - see deprecation notices in those folders.
 
 ---
 
