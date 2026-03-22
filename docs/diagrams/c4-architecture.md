@@ -1,0 +1,520 @@
+# C4 Architecture Diagrams for Mneme
+
+This document contains C4 model diagrams (Context, Containers, Components, Code) for the Mneme platform.
+
+---
+
+## Level 1: System Context Diagram
+
+**Purpose**: Show how Mneme fits into the larger ecosystem
+
+```
+                    ┌──────────────────┐
+                    │   Developers     │
+                    │   (Build AI      │
+                    │    Agents)       │
+                    └────────┬─────────┘
+                             │
+                             │ integrates with
+                             ▼
+    ┌──────────────────────────────────────────┐
+    │                                          │
+    │            AI Agents                     │
+    │  ┌────────────┐      ┌────────────┐     │
+    │  │ OpenClaw   │      │  Custom    │     │
+    │  │  Agent     │      │  Agents    │     │
+    │  └─────┬──────┘      └─────┬──────┘     │
+    │        │                   │             │
+    └────────┼───────────────────┼─────────────┘
+             │                   │
+             │ queries context   │
+             ▼                   ▼
+    ┌─────────────────────────────────────┐
+    │                                     │
+    │        Mneme Platform               │
+    │  Unified Context Management         │
+    │  for AI Agents                      │
+    │                                     │
+    └─────────┬──────────────┬────────────┘
+              │              │
+              │ ingests from │ uses
+              ▼              ▼
+    ┌──────────────┐   ┌──────────────┐
+    │ Data Sources │   │External APIs │
+    ├──────────────┤   ├──────────────┤
+    │• Google Chat │   │• OpenAI      │
+    │• Slack       │   │  (Embeddings)│
+    │• OpenClaw    │   │• Gemini      │
+    │  Sessions    │   │  (Embeddings)│
+    │• Documents   │   │              │
+    │• RSS Feeds   │   │              │
+    └──────────────┘   └──────────────┘
+```
+
+**Key Relationships**:
+- **Developers** build AI agents that use Mneme for context
+- **AI Agents** query Mneme for relevant context
+- **Mneme** ingests from multiple data sources
+- **Mneme** uses external APIs for embeddings
+- **Data Sources** push/pull data to Mneme
+
+---
+
+## Level 2: Container Diagram
+
+**Purpose**: Show the major containers (applications/services) within Mneme
+
+```
+┌───────────────────────────────────────────────────────────────┐
+│                       Mneme Platform                          │
+├───────────────────────────────────────────────────────────────┤
+│                                                               │
+│  ┌────────────────────────────────────────────────────┐      │
+│  │             API Gateway                            │      │
+│  │  [Container: Node.js + Express]                    │      │
+│  │                                                     │      │
+│  │  • REST API (POST /query, /ingest)                │      │
+│  │  • gRPC API (high-performance)                    │      │
+│  │  • Authentication (JWT)                            │      │
+│  │  • Rate limiting                                   │      │
+│  └───────────┬────────────────────────────────────────┘      │
+│              │                                                │
+│              ▼                                                │
+│  ┌────────────────────────────────────────────────────┐      │
+│  │           Core Services Layer                      │      │
+│  ├────────────────────────────────────────────────────┤      │
+│  │                                                     │      │
+│  │  ┌─────────────────┐  ┌─────────────────┐         │      │
+│  │  │ Ingestion       │  │   Storage       │         │      │
+│  │  │ Service         │─▶│   Service       │         │      │
+│  │  │                 │  │                 │         │      │
+│  │  │ [Node.js]       │  │ [Node.js]       │         │      │
+│  │  └─────────────────┘  └────────┬────────┘         │      │
+│  │                                 │                  │      │
+│  │  ┌─────────────────┐           │                  │      │
+│  │  │ Retrieval       │◀──────────┘                  │      │
+│  │  │ Service         │                              │      │
+│  │  │                 │                              │      │
+│  │  │ [Node.js]       │                              │      │
+│  │  └─────────────────┘                              │      │
+│  │                                                     │      │
+│  └────────────────────────────────────────────────────┘      │
+│                                                               │
+│  ┌────────────────────────────────────────────────────┐      │
+│  │         Background Workers                         │      │
+│  ├────────────────────────────────────────────────────┤      │
+│  │  [Container: Node.js Workers]                      │      │
+│  │                                                     │      │
+│  │  • Embedding Queue Worker                         │      │
+│  │  • Entity Extraction Worker                       │      │
+│  │  • Summarization Worker                           │      │
+│  └────────────────────────────────────────────────────┘      │
+│                                                               │
+│  ┌────────────────────────────────────────────────────┐      │
+│  │           Data Storage Layer                       │      │
+│  ├────────────────────────────────────────────────────┤      │
+│  │                                                     │      │
+│  │  ┌──────────────────────┐  ┌──────────────────┐   │      │
+│  │  │ SQLite + sqlite-vec  │  │ Redis (Cache)    │   │      │
+│  │  │ [Database]           │  │ [Key-Value Store]│   │      │
+│  │  │                      │  │                  │   │      │
+│  │  │ • Contexts table     │  │ • Query cache    │   │      │
+│  │  │ • FTS index          │  │ • Embedding queue│   │      │
+│  │  │ • Vector index       │  │                  │   │      │
+│  │  └──────────────────────┘  └──────────────────┘   │      │
+│  └────────────────────────────────────────────────────┘      │
+│                                                               │
+└───────────────────────────────────────────────────────────────┘
+
+External Systems:
+
+┌──────────────┐          ┌──────────────────┐
+│ Data Sources │          │  External APIs   │
+├──────────────┤          ├──────────────────┤
+│• Google Chat │─webhook─▶│ • OpenAI API     │
+│• Slack       │─webhook─▶│   (Embeddings)   │
+│• OpenClaw    │─files──▶ │ • Gemini API     │
+│• Documents   │          │   (Embeddings)   │
+└──────────────┘          └──────────────────┘
+```
+
+**Technology Stack**:
+- **API Gateway**: Node.js + Express, gRPC
+- **Services**: Node.js (TypeScript)
+- **Storage**: SQLite + sqlite-vec (MVP), PostgreSQL + pgvector (future)
+- **Cache**: Redis (optional)
+- **Workers**: Node.js background processes
+
+---
+
+## Level 3: Component Diagram (Ingestion Service)
+
+**Purpose**: Show internal components of the Ingestion Service
+
+```
+┌────────────────────────────────────────────────────────┐
+│             Ingestion Service                          │
+├────────────────────────────────────────────────────────┤
+│                                                        │
+│  ┌──────────────────────────────────────────────┐    │
+│  │        Adapter Registry                      │    │
+│  │  [Component]                                 │    │
+│  │                                              │    │
+│  │  • registerAdapter(adapter)                  │    │
+│  │  • startAll()                                │    │
+│  │  • stopAll()                                 │    │
+│  └──────────────┬───────────────────────────────┘    │
+│                 │                                      │
+│                 │ manages                              │
+│                 ▼                                      │
+│  ┌─────────────────────────────────────────────────┐ │
+│  │          Source Adapters                        │ │
+│  │  [Component Collection]                         │ │
+│  │                                                  │ │
+│  │  ┌────────────┐  ┌────────────┐  ┌──────────┐ │ │
+│  │  │ Webhook    │  │ Poll       │  │ Stream   │ │ │
+│  │  │ Adapter    │  │ Adapter    │  │ Adapter  │ │ │
+│  │  └─────┬──────┘  └─────┬──────┘  └────┬─────┘ │ │
+│  │        │                │               │       │ │
+│  └────────┼────────────────┼───────────────┼───────┘ │
+│           │                │               │         │
+│           └────────────────┴───────────────┘         │
+│                            │                          │
+│                            ▼                          │
+│  ┌─────────────────────────────────────────────────┐ │
+│  │      Deduplication Engine                       │ │
+│  │  [Component]                                    │ │
+│  │                                                  │ │
+│  │  • computeContentHash(message)                  │ │
+│  │  • checkDuplicate(hash)                         │ │
+│  └────────────────────┬────────────────────────────┘ │
+│                       │                               │
+│                       ▼                               │
+│  ┌─────────────────────────────────────────────────┐ │
+│  │      Normalization Pipeline                     │ │
+│  │  [Component]                                    │ │
+│  │                                                  │ │
+│  │  • convertToUnifiedSchema(message)              │ │
+│  │  • enrichMetadata(context)                      │ │
+│  └────────────────────┬────────────────────────────┘ │
+│                       │                               │
+│                       ▼                               │
+│  ┌─────────────────────────────────────────────────┐ │
+│  │      Batch Processor                            │ │
+│  │  [Component]                                    │ │
+│  │                                                  │ │
+│  │  • batchInsert(contexts)                        │ │
+│  │  • queueEmbeddings(contexts)                    │ │
+│  └────────────────────┬────────────────────────────┘ │
+│                       │                               │
+└───────────────────────┼───────────────────────────────┘
+                        │
+                        ▼
+                 Storage Service
+```
+
+**Data Flow**:
+1. **Adapter** receives event (webhook, poll result, file change)
+2. **Deduplication** checks content hash
+3. **Normalization** converts to unified schema
+4. **Batch Processor** inserts to storage, queues embeddings
+
+---
+
+## Level 3: Component Diagram (Retrieval Service)
+
+**Purpose**: Show internal components of the Retrieval Service
+
+```
+┌────────────────────────────────────────────────────────┐
+│             Retrieval Service                          │
+├────────────────────────────────────────────────────────┤
+│                                                        │
+│  ┌──────────────────────────────────────────────┐    │
+│  │        Query Engine                          │    │
+│  │  [Component]                                 │    │
+│  │                                              │    │
+│  │  • hybridSearch(query, options)              │    │
+│  └──────────────┬───────────────────────────────┘    │
+│                 │                                      │
+│                 │ orchestrates                         │
+│                 ▼                                      │
+│  ┌─────────────────────────────────────────────────┐ │
+│  │          Search Strategies                      │ │
+│  │  [Component Collection]                         │ │
+│  │                                                  │ │
+│  │  ┌────────────┐  ┌────────────┐  ┌──────────┐ │ │
+│  │  │ Vector     │  │ FTS        │  │ Metadata │ │ │
+│  │  │ Search     │  │ Search     │  │ Query    │ │ │
+│  │  └─────┬──────┘  └─────┬──────┘  └────┬─────┘ │ │
+│  │        │                │               │       │ │
+│  └────────┼────────────────┼───────────────┼───────┘ │
+│           │                │               │         │
+│           └────────────────┴───────────────┘         │
+│                            │                          │
+│                            ▼                          │
+│  ┌─────────────────────────────────────────────────┐ │
+│  │         Result Merger                           │ │
+│  │  [Component]                                    │ │
+│  │                                                  │ │
+│  │  • mergeResults(strategies)                     │ │
+│  │  • weightedScoring()                            │ │
+│  └────────────────────┬────────────────────────────┘ │
+│                       │                               │
+│                       ▼                               │
+│  ┌─────────────────────────────────────────────────┐ │
+│  │         Result Ranker                           │ │
+│  │  [Component]                                    │ │
+│  │                                                  │ │
+│  │  • deduplicateByHash(results)                   │ │
+│  │  • rankByScore(results)                         │ │
+│  └────────────────────┬────────────────────────────┘ │
+│                       │                               │
+│                       ▼                               │
+│  ┌─────────────────────────────────────────────────┐ │
+│  │      Token Budget Packer                        │ │
+│  │  [Component]                                    │ │
+│  │                                                  │ │
+│  │  • packToLimit(results, maxTokens)              │ │
+│  │  • estimateTokens(context)                      │ │
+│  └────────────────────┬────────────────────────────┘ │
+│                       │                               │
+└───────────────────────┼───────────────────────────────┘
+                        │
+                        ▼
+                   Response
+```
+
+**Algorithm**:
+1. **Query Engine** coordinates parallel searches
+2. **Search Strategies** query different indexes
+3. **Result Merger** combines with weighted scores
+4. **Result Ranker** deduplicates and ranks
+5. **Token Packer** fits results into token budget
+
+---
+
+## Level 4: Code Diagram (Adapter Interface)
+
+**Purpose**: Show class structure for adapters
+
+```
+┌─────────────────────────────────────────┐
+│          <<interface>>                  │
+│         SourceAdapter                   │
+├─────────────────────────────────────────┤
+│  + id: string                           │
+│  + type: 'webhook'|'poll'|'stream'      │
+│  + config: AdapterConfig                │
+├─────────────────────────────────────────┤
+│  + start(): Promise<void>               │
+│  + stop(): Promise<void>                │
+│  + onMessage(callback): void            │
+└───────────────┬─────────────────────────┘
+                │
+                │ implements
+                │
+     ┌──────────┴───────────────┬─────────────────┐
+     │                          │                 │
+     ▼                          ▼                 ▼
+┌─────────────┐      ┌──────────────────┐  ┌───────────────┐
+│  Webhook    │      │   Poll           │  │   Stream      │
+│  Adapter    │      │   Adapter        │  │   Adapter     │
+├─────────────┤      ├──────────────────┤  ├───────────────┤
+│- webhookUrl │      │- pollIntervalMs  │  │- connection   │
+│- verifyFn   │      │- cursor          │  │- heartbeat    │
+├─────────────┤      ├──────────────────┤  ├───────────────┤
+│+ start()    │      │+ start()         │  │+ start()      │
+│+ stop()     │      │+ stop()          │  │+ stop()       │
+│+ handleReq()│      │+ poll()          │  │+ connect()    │
+└─────────────┘      └──────────────────┘  └───────────────┘
+     │                          │                 │
+     │ extends                  │ extends         │ extends
+     ▼                          ▼                 ▼
+┌─────────────┐      ┌──────────────────┐  ┌───────────────┐
+│GoogleChat   │      │  RSS             │  │  Discord      │
+│Adapter      │      │  Adapter         │  │  Adapter      │
+├─────────────┤      ├──────────────────┤  ├───────────────┤
+│- spaceId    │      │- feedUrls        │  │- token        │
+│- apiKey     │      │                  │  │- gateway      │
+├─────────────┤      ├──────────────────┤  ├───────────────┤
+│+ verify()   │      │+ parseFeed()     │  │+ handleMsg()  │
+└─────────────┘      └──────────────────┘  └───────────────┘
+```
+
+**Key Classes**:
+- **SourceAdapter** (interface): Contract all adapters must implement
+- **WebhookAdapter** (abstract): Base for webhook-based sources
+- **PollAdapter** (abstract): Base for polling sources
+- **StreamAdapter** (abstract): Base for streaming sources
+- **Concrete Adapters**: GoogleChat, Slack, RSS, Discord, etc.
+
+---
+
+## Deployment Diagram
+
+**Purpose**: Show how Mneme is deployed
+
+### MVP Deployment (Sidecar)
+
+```
+┌───────────────────────────────────────┐
+│         Docker Host                   │
+├───────────────────────────────────────┤
+│                                       │
+│  ┌─────────────────────────────────┐ │
+│  │  openclaw-network (bridge)      │ │
+│  │                                  │ │
+│  │  ┌──────────────┐  ┌──────────┐ │ │
+│  │  │  OpenClaw    │  │  Mneme   │ │ │
+│  │  │  Container   │─▶│Container │ │ │
+│  │  │              │  │          │ │ │
+│  │  │ Port: 18789  │  │Port: 8080│ │ │
+│  │  └──────────────┘  └────┬─────┘ │ │
+│  │                          │       │ │
+│  └──────────────────────────┼───────┘ │
+│                             │         │
+│  ┌──────────────────────────┴──────┐  │
+│  │   Volume: ./data                │  │
+│  │   ├─ mneme.db (SQLite)          │  │
+│  │   └─ mneme.log                  │  │
+│  └─────────────────────────────────┘  │
+└───────────────────────────────────────┘
+```
+
+### Production Deployment (Kubernetes)
+
+```
+┌────────────────────────────────────────────────┐
+│           Kubernetes Cluster                   │
+├────────────────────────────────────────────────┤
+│                                                │
+│  ┌──────────────────────────────────────────┐ │
+│  │  Ingress Controller                      │ │
+│  │  (NGINX)                                 │ │
+│  └────────────┬─────────────────────────────┘ │
+│               │                                │
+│               ▼                                │
+│  ┌──────────────────────────────────────────┐ │
+│  │  Mneme Service (ClusterIP)               │ │
+│  └────────────┬─────────────────────────────┘ │
+│               │                                │
+│               ▼                                │
+│  ┌──────────────────────────────────────────┐ │
+│  │  Mneme Deployment                        │ │
+│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  │ │
+│  │  │ Pod 1   │  │ Pod 2   │  │ Pod 3   │  │ │
+│  │  │         │  │         │  │         │  │ │
+│  │  │ Mneme   │  │ Mneme   │  │ Mneme   │  │ │
+│  │  │ API     │  │ API     │  │ API     │  │ │
+│  │  └────┬────┘  └────┬────┘  └────┬────┘  │ │
+│  │       │            │            │        │ │
+│  └───────┼────────────┼────────────┼────────┘ │
+│          │            │            │          │
+│          └────────────┴────────────┘          │
+│                       │                        │
+│                       ▼                        │
+│  ┌──────────────────────────────────────────┐ │
+│  │  PostgreSQL StatefulSet                  │ │
+│  │  (Primary + 2 Replicas)                  │ │
+│  │  with pgvector extension                 │ │
+│  └──────────────────────────────────────────┘ │
+│                                                │
+│  ┌──────────────────────────────────────────┐ │
+│  │  Redis StatefulSet                       │ │
+│  │  (Cache + Queue)                         │ │
+│  └──────────────────────────────────────────┘ │
+│                                                │
+│  ┌──────────────────────────────────────────┐ │
+│  │  Background Workers Deployment           │ │
+│  │  (Embedding, Extraction, Summarization)  │ │
+│  └──────────────────────────────────────────┘ │
+│                                                │
+└────────────────────────────────────────────────┘
+```
+
+---
+
+## Sequence Diagrams
+
+### Ingestion Flow (Webhook)
+
+```
+Google Chat    Mneme          Dedup       Storage     Worker
+    │           │              │            │           │
+    │ POST      │              │            │           │
+    │ /webhook  │              │            │           │
+    ├──────────▶│              │            │           │
+    │           │              │            │           │
+    │           │ 200 OK       │            │           │
+    │◀──────────┤              │            │           │
+    │           │              │            │           │
+    │           │ hash(content)│            │           │
+    │           ├─────────────▶│            │           │
+    │           │              │            │           │
+    │           │  duplicate?  │            │           │
+    │           │◀─────────────┤            │           │
+    │           │  (no)        │            │           │
+    │           │              │            │           │
+    │           │  insert      │            │           │
+    │           ├─────────────────────────▶│           │
+    │           │              │            │           │
+    │           │  queue embed │            │           │
+    │           ├───────────────────────────────────────▶
+    │           │              │            │           │
+```
+
+### Query Flow (Hybrid Search)
+
+```
+Agent     API Gateway  Retrieval  Vector   FTS    Merger
+  │           │          │         │       │        │
+  │ POST      │          │         │       │        │
+  │ /query    │          │         │       │        │
+  ├──────────▶│          │         │       │        │
+  │           │          │         │       │        │
+  │           │ search() │         │       │        │
+  │           ├─────────▶│         │       │        │
+  │           │          │         │       │        │
+  │           │          │ vector  │       │        │
+  │           │          ├────────▶│       │        │
+  │           │          │         │       │        │
+  │           │          │ fts     │       │        │
+  │           │          ├────────────────▶│        │
+  │           │          │         │       │        │
+  │           │          │ results │       │        │
+  │           │          │◀────────┤       │        │
+  │           │          │         │       │        │
+  │           │          │ results │       │        │
+  │           │          │◀────────────────┤        │
+  │           │          │         │       │        │
+  │           │          │ merge   │       │        │
+  │           │          ├────────────────────────▶ │
+  │           │          │         │       │        │
+  │           │          │ ranked  │       │        │
+  │           │          │◀────────────────────────┤│
+  │           │          │         │       │        │
+  │           │ results  │         │       │        │
+  │           │◀─────────┤         │       │        │
+  │           │          │         │       │        │
+  │ JSON      │          │         │       │        │
+  │◀──────────┤          │         │       │        │
+  │           │          │         │       │        │
+```
+
+---
+
+## Summary
+
+These C4 diagrams provide a comprehensive architectural view of Mneme at multiple levels of abstraction:
+
+1. **Context**: How Mneme fits in the ecosystem
+2. **Containers**: Major services and their responsibilities
+3. **Components**: Internal structure of key services
+4. **Code**: Class structure for extensibility
+
+Use these diagrams for:
+- Onboarding new developers
+- Architectural discussions
+- Design reviews
+- Documentation
