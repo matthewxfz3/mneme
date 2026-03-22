@@ -1,6 +1,6 @@
 {
   "name": "mneme",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Unified Context Management Platform for AI Agents",
   "keywords": [
     "ai",
@@ -52,9 +52,13 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "adm-zip": "^0.5.16",
     "better-sqlite3": "^11.0.0",
+    "chokidar": "^5.0.0",
     "express": "^5.0.0",
     "hono": "^4.0.0",
+    "pdf-parse": "^2.4.5",
+    "sqlite-vec": "^0.1.7",
     "zod": "^3.23.0"
   },
   "devDependencies": {
