@@ -16,12 +16,18 @@
 
 ## Vision
 
-> "Every AI agent should have instant access to all relevant context, regardless of where that information originated."
+> "Every AI agent should have instant access to all relevant context with optimal performance, regardless of where that information originated or how it's stored."
+
+**Core Goals** (Technology-Agnostic):
+1. **Performance**: Sub-100ms retrieval at any scale
+2. **Efficient Indexing**: Modern hybrid approaches (sparse + dense + graph)
+3. **Accurate Retrieval**: Best-in-class ranking and context assembly
+4. **Flexible Storage**: Pluggable backends optimized for use case
 
 **Phased Delivery**:
-- **M1** (✅ Complete): Prove core value with local OpenClaw library
-- **M2** (🔲 Planned): Multi-source local adapters (Slack, Discord, docs)
-- **M3** (🔲 Future): Multi-tenant API server with real-time ingestion
+- **M1** (✅ Complete): Prove core algorithms with SQLite reference implementation
+- **M2** (🔲 Planned): Multi-source adapters + advanced indexing (vectors, graphs)
+- **M3** (🔲 Future): Scale-out architecture + distributed retrieval
 
 ---
 
