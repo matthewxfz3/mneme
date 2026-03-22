@@ -1,16 +1,25 @@
 /**
  * Mneme - Unified Context Management Platform for AI Agents
  *
- * Main entry point for the Mneme server
+ * Main entry point for the Mneme library
  */
 
-export * from './types';
-export * from './core';
-export * from './adapters';
-export * from './api';
+// Export types only as types to avoid conflicts
+export type {
+  SourceType,
+  ContentType,
+  Message as TypesMessage,
+  StoredContext,
+  QueryOptions,
+  QueryResult,
+  SourceAdapter,
+} from './types/index.js';
 
-// TODO: Implement server startup
-console.log('🧠 Mneme - Context Management Platform');
-console.log('Version: 0.1.0');
-console.log('');
-console.log('Server starting...');
+// Export core modules
+export * from './core/service.js';
+export * from './core/tokens.js';
+export * from './core/import.js';
+export * from './core/search.js';
+export * from './core/ranking.js';
+export * from './core/assembly.js';
+export * from './core/engine.js';

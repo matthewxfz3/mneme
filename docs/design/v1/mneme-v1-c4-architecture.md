@@ -1,6 +1,15 @@
-# C4 Architecture Diagrams for Mneme
+# Mneme v1.0 - C4 Architecture Diagrams
 
-This document contains C4 model diagrams (Context, Containers, Components, Code) for the Mneme platform using Mermaid syntax.
+> **⚠️ VERSION NOTE**: These diagrams describe the **original vision** (v1.0) for Mneme as a REST API server with multi-source adapters.
+>
+> **What was actually implemented**: See [mneme-v2-plan.md](./mneme-v2-plan.md) and [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md) for the **v2.0 implementation** (local SQLite library for OpenClaw).
+>
+> These diagrams are kept for **reference only** and show architecture **not yet implemented**.
+
+**Version**: 1.0 (Original Vision - Reference Only)
+**Status**: Reference (Superseded by v2.0)
+
+This document contains C4 model diagrams (Context, Containers, Components, Code) for the Mneme v1.0 platform vision using Mermaid syntax.
 
 ---
 

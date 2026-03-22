@@ -1,8 +1,14 @@
-# Mneme - High-Level Design (HLD)
+# Mneme v1.0 - High-Level Design (HLD)
 
-**Version**: 1.0
-**Date**: March 21, 2026
-**Status**: Draft
+> **⚠️ VERSION NOTE**: This document describes the **original vision** (v1.0) for Mneme as a REST API server with multi-source adapters.
+>
+> **What was actually implemented**: See [mneme-v2-plan.md](./mneme-v2-plan.md) and [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md) for the **v2.0 implementation** (local SQLite library for OpenClaw).
+>
+> This document is kept for **reference only** and describes architecture **not yet implemented**.
+
+**Version**: 1.0 (Original Vision - Reference Only)
+**Date**: March 2026
+**Status**: Reference (Superseded by v2.0)
 **Owner**: Engineering
 
 ---
