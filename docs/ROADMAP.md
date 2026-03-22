@@ -1,6 +1,6 @@
 # Mneme Development Roadmap
 
-**Vision**: Unified context management platform for AI agents (See [v1 PRD](design/v1/mneme-v1-prd.md))
+**Vision**: Unified context management platform for AI agents (See [PRD](design/PRD.md))
 
 ---
 
