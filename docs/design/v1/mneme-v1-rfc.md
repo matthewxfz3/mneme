@@ -1,16 +1,16 @@
-# RFC-001: Mneme v1.0 Context Management Platform
+# RFC-001: Mneme v1 Context Management Platform
 
-> **⚠️ VERSION NOTE**: This RFC describes the **original vision** (v1.0) for Mneme as a REST API server with multi-source adapters.
+> **Project Vision**: Technical specification for the **full Mneme platform** (Milestone 3).
 >
-> **What was actually implemented**: See [mneme-v2-plan.md](./mneme-v2-plan.md) and [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md) for the **v2.0 implementation** (local SQLite library for OpenClaw).
+> **Phased Delivery**: M1 (v2) ✅ Complete | M2 (Multi-source local) 🔲 Planned | M3 (Server) 🔲 Future
 >
-> This document is kept for **reference only** and describes specifications **not yet implemented**.
+> **See**: [ROADMAP.md](../../ROADMAP.md) for timeline and [v2](../v2/mneme-v2-plan.md) for M1 implementation.
 
-**Version**: 1.0 (Original Vision - Reference Only)
-**Status**: Reference (Superseded by v2.0)
+**Version**: 1.0 (Full Vision - M3 Target)
+**Status**: Phased Implementation
 **Authors**: Engineering Team
 **Created**: March 2026
-**Updated**: March 21, 2026
+**Updated**: March 22, 2026
 
 ---
 

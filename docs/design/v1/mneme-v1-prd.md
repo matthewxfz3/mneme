@@ -1,14 +1,14 @@
-# Mneme v1.0 - Product Requirements Document (PRD)
+# Mneme v1 - Product Requirements Document (PRD)
 
-> **⚠️ VERSION NOTE**: This document describes the **original vision** (v1.0) for Mneme as a REST API server with multi-source adapters.
+> **Project Vision**: This describes the **full Mneme vision** - a unified context management platform for AI agents.
 >
-> **What was actually implemented**: See [mneme-v2-plan.md](./mneme-v2-plan.md) and [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md) for the **v2.0 implementation** (local SQLite library for OpenClaw).
+> **Current Status**: Milestone 1 (v2) delivered. See [ROADMAP.md](../../ROADMAP.md) for phased plan.
 >
-> This document is kept for **reference only** and describes features **not yet implemented**.
+> **Implementation**: [v2 (M1)](../v2/mneme-v2-plan.md) = Local library | [v1 (M3)](../v1/mneme-v1-rfc.md) = Full server
 
-**Version**: 1.0 (Original Vision - Reference Only)
+**Version**: 1.0 (Full Vision)
 **Date**: March 2026
-**Status**: Reference (Superseded by v2.0)
+**Status**: Phased Implementation (M1 Complete, M2-M3 Planned)
 **Owner**: Product & Engineering
 
 ---

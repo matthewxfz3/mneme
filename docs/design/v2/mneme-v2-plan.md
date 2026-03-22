@@ -1,4 +1,10 @@
-# Mneme v2: Modern Context Management for OpenClaw
+# Mneme v2: Milestone 1 - Local-First Context Management
+
+> **Project Milestone**: This is **Milestone 1** of the Mneme vision ([v1 PRD](../v1/mneme-v1-prd.md)).
+>
+> **Scope**: Local SQLite library for OpenClaw. Multi-source server features in later milestones.
+>
+> **See**: [ROADMAP.md](../../ROADMAP.md) for full 3-milestone plan.
 
 ## Problem
 

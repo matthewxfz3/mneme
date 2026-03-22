@@ -1,155 +1,102 @@
 # Mneme Design Documentation
 
-This folder contains all design documents for the Mneme project, organized by version.
+Unified context management platform for AI agents. See [ROADMAP.md](../ROADMAP.md) for phased delivery plan.
 
-## 📂 Folder Structure
+---
 
-```
-docs/design/
-├── v2/                    # Current implementation (v2.0) ✅
-│   ├── mneme-v2-plan.md
-│   └── IMPLEMENTATION_SUMMARY.md
-│
-└── v1/                    # Original vision (reference only)
-    ├── mneme-v1-prd.md
-    ├── mneme-v1-hld.md
-    ├── mneme-v1-rfc.md
-    ├── mneme-v1-c4-architecture.md
-    └── mneme-v1-openclaw-integration.md
-```
+## Quick Start
 
-## 🚀 Version 2.0 (Current Implementation) ✅
+**Current Status**: ✅ Milestone 1 (v2) Complete
 
-**Location**: [`v2/`](./v2/)
+**Read First**:
+1. [ROADMAP](../ROADMAP.md) - 3-milestone delivery plan
+2. [v2 Plan](v2/mneme-v2-plan.md) - M1 implementation (local library)
+3. [v1 PRD](v1/mneme-v1-prd.md) - Full vision (M3 target)
 
-**What was built**: Local SQLite library for OpenClaw's unified context management
+---
 
-### Key Documents
+## Project Structure
 
-**[v2/mneme-v2-plan.md](./v2/mneme-v2-plan.md)** - Implementation Plan
-- Problem: OpenClaw's 5 fragmented context systems
-- Solution: Unified SQLite database with hybrid search
-- 4-week implementation roadmap (✅ complete)
-- Storage schema and ContextEngine integration
-- Migration strategy
+### Vision Documents (Milestone 3 Target)
 
-**[v2/IMPLEMENTATION_SUMMARY.md](./v2/IMPLEMENTATION_SUMMARY.md)** - Status Report ✅
-- All 4 weeks completed
-- ~3,200+ lines of code
-- File structure and API surface
-- Testing and documentation
-- Known TODOs and next steps
+| Document | Purpose | Status |
+|----------|---------|--------|
+| [v1 PRD](v1/mneme-v1-prd.md) | Product requirements for full platform | 🔲 M3 Target |
+| [v1 RFC](v1/mneme-v1-rfc.md) | Technical specification | 🔲 M3 Target |
+| [v1 HLD](v1/mneme-v1-hld.md) | High-level design | 🔲 M3 Target |
+| [v1 C4](v1/mneme-v1-c4-architecture.md) | Architecture diagrams | 🔲 M3 Target |
 
-### Architecture Summary (v2.0)
+**Scope**: Multi-source REST API server with webhooks, RBAC, and multi-tenancy.
 
-- **Storage**: Single SQLite file (`~/.mneme/mneme.db`)
-- **Search**: FTS5 sparse (primary) + optional sqlite-vec (secondary)
-- **Tokens**: Accurate counting with SHA-256 caching (0% error)
-- **Audit**: Full compaction transparency
-- **Integration**: ContextEngine for OpenClaw
-- **Status**: ✅ Production-ready for FTS5 search
+---
 
-## 📖 Version 1.0 (Original Vision - Reference)
+### Implementation Documents (Milestone 1 Delivered)
 
-**Location**: [`v1/`](./v1/)
+| Document | Purpose | Status |
+|----------|---------|--------|
+| [v2 Plan](v2/mneme-v2-plan.md) | M1 implementation plan | ✅ Complete |
+| [Implementation Summary](v2/IMPLEMENTATION_SUMMARY.md) | What was built | ✅ Complete |
+| [v2 C4](v2/mneme-v2-c4-architecture.md) | Detailed architecture | ✅ Complete |
+| [v2 vs v1 Alignment](v2/v2-vs-v1-prd-alignment.md) | Cross-check analysis | ✅ Complete |
 
-**What this describes**: REST API server with multi-source adapters (Slack, Discord, etc.)
+**Scope**: Local SQLite library for OpenClaw with FTS5 hybrid search.
 
-> **⚠️ NOTE**: v1.0 documents describe the original vision that was **not implemented**. They are kept for reference only. See v2/ for actual implementation.
+---
 
-### Reference Documents
+## Milestone Comparison
 
-**[v1/mneme-v1-prd.md](./v1/mneme-v1-prd.md)** - Product Requirements (v1.0)
-- Multi-source context platform vision
-- REST API server architecture
-- Adapter-based design
+| Aspect | M1 (v2) ✅ | M2 🔲 | M3 (v1) 🔲 |
+|--------|-----------|-------|----------|
+| **Architecture** | Local library | Local library | REST API server |
+| **Sources** | JSONL only | Multi-source local | Live webhooks |
+| **Users** | Single-user | Single-user | Multi-tenant |
+| **Deployment** | Embedded | Embedded | Cloud service |
+| **Timeline** | 4 weeks (done) | 12 weeks | 16+ weeks |
 
-**[v1/mneme-v1-hld.md](./v1/mneme-v1-hld.md)** - High-Level Design (v1.0)
-- System architecture with API gateway
-- Component interactions
-- Technology stack (Express, webhooks)
+See [ROADMAP](../ROADMAP.md) for details.
 
-**[v1/mneme-v1-rfc.md](./v1/mneme-v1-rfc.md)** - Technical RFC (v1.0)
-- REST API specifications
-- Database schemas (different from v2)
-- Integration patterns
+---
 
-**[v1/mneme-v1-c4-architecture.md](./v1/mneme-v1-c4-architecture.md)** - C4 Diagrams (v1.0)
-- System context and container diagrams
-- Visual architecture reference
+## Reading Paths
 
-**[v1/mneme-v1-openclaw-integration.md](./v1/mneme-v1-openclaw-integration.md)** - Integration (v1.0)
-- REST API client approach
-- HTTP-based communication
+### For Developers (Building with Mneme)
+1. [v2 Plan](v2/mneme-v2-plan.md) - Understand current capabilities
+2. [Implementation Summary](v2/IMPLEMENTATION_SUMMARY.md) - See what's available
+3. [v2 C4 Architecture](v2/mneme-v2-c4-architecture.md) - Detailed components
 
-## 🎯 Key Differences: v1.0 vs v2.0
+### For Contributors (Extending Mneme)
+1. [ROADMAP](../ROADMAP.md) - Understand phased plan
+2. [v1 PRD](v1/mneme-v1-prd.md) - Full vision and goals
+3. [v2 vs v1 Alignment](v2/v2-vs-v1-prd-alignment.md) - Evolution path
+4. [v2 C4](v2/mneme-v2-c4-architecture.md) - Extension points
 
-| Aspect | v1.0 (Original Vision) | v2.0 (Implemented) ✅ |
-|--------|------------------------|----------------------|
-| **Architecture** | REST API server | Local library |
-| **Deployment** | Standalone service | Embedded in OpenClaw |
-| **Sources** | Multi-source adapters | OpenClaw-focused |
-| **Storage** | PostgreSQL/cloud | SQLite (single file) |
-| **Communication** | HTTP/REST | Direct function calls |
-| **Focus** | Scalability | Context management |
-| **Status** | Not implemented | ✅ Complete |
+### For Product/Business
+1. [ROADMAP](../ROADMAP.md) - Timeline and milestones
+2. [v1 PRD](v1/mneme-v1-prd.md) - User personas and use cases
+3. [v2 vs v1 Alignment](v2/v2-vs-v1-prd-alignment.md) - Trade-offs and rationale
 
-## 🚦 Quick Start
+---
 
-**For Developers (Start Here):**
-1. **Implementation**: Read [`v2/mneme-v2-plan.md`](./v2/mneme-v2-plan.md)
-2. **Status**: Check [`v2/IMPLEMENTATION_SUMMARY.md`](./v2/IMPLEMENTATION_SUMMARY.md)
-3. **Code**: Explore `../../src/core/`
+## Key Insights
 
-**For Product/Planning:**
-- See v1/ documents for original vision
-- See v2/ documents for actual implementation
+**Why 3 Milestones?**
+- M1: Prove core value (unified context, hybrid search) with minimal complexity
+- M2: Validate multi-source adapters locally before server complexity
+- M3: Scale to multi-tenant server only if M1-M2 prove demand
 
-**For Historical Context:**
-- v1.0 = Original scalability-focused vision
-- v2.0 = Practical OpenClaw-focused implementation
+**Why Local-First?**
+- Better privacy (no network)
+- Lower latency (no HTTP)
+- Simpler deployment (no server)
+- Faster iteration (embedded)
 
-## ✅ Review Checklist
+**Can v2 → v1?**
+Yes. M1 foundation supports M2-M3:
+- ✅ Generic storage schema (multi-source ready)
+- ✅ Component separation (reusable in server)
+- ✅ Clean interfaces (library → REST client)
+- ✅ FTS5 primary (works offline)
 
-**Before Using Mneme:**
-- [ ] Read [`v2/mneme-v2-plan.md`](./v2/mneme-v2-plan.md) - Architecture
-- [ ] Review [`v2/IMPLEMENTATION_SUMMARY.md`](./v2/IMPLEMENTATION_SUMMARY.md) - Status
-- [ ] Understand SQLite schema and FTS5 search
-- [ ] Check integration approach (ContextEngine)
-- [ ] Review migration from fragmented systems
+---
 
-**Understanding the Evolution:**
-- [ ] Why v1.0 wasn't implemented (scope change)
-- [ ] What v2.0 prioritizes (context > scalability)
-- [ ] Future path (v1.0 features may come later)
-
-## 📝 Version History
-
-### v2.0 (March 2026) - ✅ Current Implementation
-**Status**: Complete and Production-Ready
-
-- Unified SQLite storage (5 systems → 1)
-- Hybrid search: FTS5 + optional vectors
-- Accurate token counting (0% error)
-- Compaction audit trail
-- Full ContextEngine implementation
-- CLI tools and comprehensive tests
-- ~3,200+ lines of code
-
-### v1.0 (March 2026) - Original Vision (Reference)
-**Status**: Not Implemented (Design Only)
-
-- Multi-source context management platform
-- REST API server with adapters
-- Slack, Discord, Google Chat integrations
-- PostgreSQL/cloud storage
-- Microservices architecture
-
-## 💡 Questions?
-
-**About current implementation (v2.0)**:
-- Implementation plan: [`v2/mneme-v2-plan.md`](./v2/mneme-v2-plan.md)
-- Status & TODOs: [`v2/IMPLEMENTATION_SUMMARY.md`](./v2/IMPLEMENTATION_SUMMARY.md)
-
-**About original vision (v1.0)**:
-- See v1/ folder (reference only, not implemented)
+**Last Updated**: March 22, 2026

@@ -1,12 +1,15 @@
-# Mneme v2 Implementation Summary
+# Mneme v2 Implementation Summary (Milestone 1)
 
+**Milestone**: M1 - Local-First Library
 **Date Completed**: March 21, 2026
 **Implementation Time**: ~4 hours
-**Status**: ✅ Complete - All 4 weeks implemented
+**Status**: ✅ Complete - All 4 weeks delivered
+
+> **Project Context**: This is Milestone 1 of 3. See [ROADMAP.md](../../ROADMAP.md) for full plan.
 
 ## Overview
 
-Successfully implemented the complete Mneme v2 system as specified in `mneme-v2-plan.md`. All core functionality has been built, tested, and documented.
+Successfully implemented Milestone 1 (v2) as specified in `mneme-v2-plan.md`. Delivers local SQLite library with unified context management for OpenClaw. Multi-source and server features deferred to M2-M3.
 
 ## What Was Implemented
 
