@@ -128,9 +128,9 @@ graph TB
 
     style GATEWAY fill:#4A90E2,stroke:#2E5C8A,stroke-width:2px,color:#fff
     style INGEST fill:#50C878,stroke:#3A9B5C,stroke-width:2px,color:#fff
-    style STORAGE fill:#FFB347,stroke:#CC8F39,stroke-width:2px,color:#fff
+    style STORAGE fill:#E67E22,stroke:#B8621B,stroke-width:2px,color:#fff
     style RETRIEVAL fill:#9370DB,stroke:#6A4FA3,stroke-width:2px,color:#fff
-    style SQLITE fill:#FF6B6B,stroke:#CC5555,stroke-width:2px,color:#fff
+    style SQLITE fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
 ```
 
 ---
@@ -166,7 +166,7 @@ graph TB
     BATCH --> STORAGE[Storage Service]
 
     style REGISTRY fill:#4A90E2,stroke:#2E5C8A,stroke-width:2px,color:#fff
-    style DEDUP fill:#FFB347,stroke:#CC8F39,stroke-width:2px,color:#fff
+    style DEDUP fill:#E67E22,stroke:#B8621B,stroke-width:2px,color:#fff
     style NORMALIZE fill:#50C878,stroke:#3A9B5C,stroke-width:2px,color:#fff
     style BATCH fill:#9370DB,stroke:#6A4FA3,stroke-width:2px,color:#fff
 ```
@@ -216,9 +216,9 @@ graph TB
     style ENGINE fill:#4A90E2,stroke:#2E5C8A,stroke-width:2px,color:#fff
     style VECTOR fill:#9370DB,stroke:#6A4FA3,stroke-width:2px,color:#fff
     style FTS fill:#50C878,stroke:#3A9B5C,stroke-width:2px,color:#fff
-    style META fill:#FFB347,stroke:#CC8F39,stroke-width:2px,color:#fff
-    style MERGER fill:#FF6B6B,stroke:#CC5555,stroke-width:2px,color:#fff
-    style CACHE fill:#87CEEB,stroke:#5F9DC7,stroke-width:2px,color:#fff
+    style META fill:#E67E22,stroke:#B8621B,stroke-width:2px,color:#fff
+    style MERGER fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style CACHE fill:#3498DB,stroke:#2874A6,stroke-width:2px,color:#fff
 ```
 
 **Search Algorithm**:
@@ -441,7 +441,7 @@ graph TB
 
     style OPENCLAW fill:#7B68EE,stroke:#5A4CB8,stroke-width:2px,color:#fff
     style MNEME fill:#4A90E2,stroke:#2E5C8A,stroke-width:2px,color:#fff
-    style DATA fill:#FFB347,stroke:#CC8F39,stroke-width:2px,color:#fff
+    style DATA fill:#E67E22,stroke:#B8621B,stroke-width:2px,color:#fff
 ```
 
 **docker-compose.yml**:
@@ -508,8 +508,8 @@ graph TB
     style POD1 fill:#4A90E2,stroke:#2E5C8A,stroke-width:2px,color:#fff
     style POD2 fill:#4A90E2,stroke:#2E5C8A,stroke-width:2px,color:#fff
     style POD3 fill:#4A90E2,stroke:#2E5C8A,stroke-width:2px,color:#fff
-    style PG fill:#FF6B6B,stroke:#CC5555,stroke-width:2px,color:#fff
-    style REDIS fill:#87CEEB,stroke:#5F9DC7,stroke-width:2px,color:#fff
+    style PG fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style REDIS fill:#3498DB,stroke:#2874A6,stroke-width:2px,color:#fff
 ```
 
 ---
