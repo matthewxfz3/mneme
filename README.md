@@ -15,6 +15,7 @@ Mneme v2 replaces OpenClaw's **5 fragmented context systems** with a single unif
 - 🔍 **Hybrid Search**: FTS5 sparse + optional vector dense retrieval across ALL sessions
 - 📊 **Compaction Audit**: Full transparency on dropped messages
 - ⚡ **Fast**: <20ms keyword search, <80ms hybrid search on 100K messages
+- 👥 **Multi-User Ready**: Database-per-user architecture with resource management ([docs](docs/MULTI_USER_SUPPORT.md))
 
 ## 🎯 Quick Example
 
@@ -341,7 +342,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 - Elasticsearch (external service)
 - Cloud DBs (not needed)
 - Mandatory embeddings (FTS5 works great alone)
-- Multi-user sync (single-user focus)
+- Cloud sync between users (local multi-user supported via DatabaseManager)
 
 ---
 
