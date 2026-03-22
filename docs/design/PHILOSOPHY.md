@@ -1,41 +1,50 @@
 # Mneme Design Philosophy
 
-**Core Principle**: Performance, efficient indexing, and retrieval excellence - not infrastructure lock-in.
+**Core Principle**: Intelligent context understanding through indexing + summarization - not infrastructure lock-in.
 
 ---
 
 ## Mission Statement
 
-> **"Mneme provides the fastest, most accurate context retrieval for AI agents, regardless of scale or infrastructure."**
+> **"Mneme provides AI agents with an intelligent context graph that automatically updates and generates high-quality summaries of history, personalization, and relevant context."**
 
 **What This Means**:
-- 🎯 **Performance First**: Sub-100ms queries at any scale
-- 🎯 **Best Algorithms**: Hybrid indexing (sparse + dense + graph)
+- 🎯 **Summarization Quality First**: Focus, detail, and global views with high accuracy
+- 🎯 **Context Graph**: Relationships between messages, entities, and topics
+- 🎯 **Auto-Update**: Context refreshes automatically from multiple sources
+- 🎯 **Best Algorithms**: Indexing (sparse + dense + graph) + Summarization (history + personalization)
 - 🎯 **Storage Agnostic**: SQLite, PostgreSQL, Elasticsearch - choose what's optimal
 - 🎯 **Scale Adaptive**: Local (1K items) to distributed (billions)
+
+**Core Value = Indexing + Summarization** (not just retrieval)
 
 ---
 
 ## What Mneme IS
 
-### ✅ A Performance-First Retrieval Engine
+### ✅ A Context Graph + Intelligent Summarization Engine
 
-**Core Value = Algorithms, Not Infrastructure**:
+**Core Value = Indexing + Summarization, Not Infrastructure**:
 ```
 Mneme's Value:
-├── Hybrid Search (FTS + Vector + Graph)
-├── Advanced Ranking (RRF, Temporal Decay, Diversity)
+├── Context Graph (Entities + Relationships + Temporal Tracking)
+├── Intelligent Summarization (History + Personalization + Updates)
+├── Multi-View Generation (Focus + Detail + Global)
+├── Auto-Update System (Multiple Sources, Automatic Refresh)
+├── Advanced Indexing (FTS + Vector + Graph Traversal)
 ├── Smart Assembly (Strategies, Token Budgets)
-├── Accurate Token Counting (Model-Specific)
-└── Efficient Indexing (Multi-Strategy)
+└── Accurate Token Counting (Model-Specific)
 
 NOT:
 ├─X─ "A SQLite wrapper"
 ├─X─ "A PostgreSQL extension"
-└─X─ "A vector database"
+├─X─ "A vector database"
+├─X─ "Just a retrieval system" (it's indexing + summarization)
+└─X─ "Static context storage" (it auto-updates)
 ```
 
 **Why**: Technology changes, problems persist. Focus on solving problems optimally.
+**What**: The problem is intelligent context understanding, not just fast queries.
 
 ---
 
@@ -328,20 +337,28 @@ class QdrantStore implements VectorStore { ... }
 
 ---
 
-## Success = Performance, Not Technology
+## Success = Summarization Quality, Not Technology
 
-**What We Measure**:
-- ✅ Query latency < 100ms p95
-- ✅ Search precision > 80%
-- ✅ Token accuracy = 100%
-- ✅ User satisfaction > 4/5
+**What We Measure (Priority Order)**:
+1. ✅ **Summarization Quality** > 4.0/5.0 user rating (PRIMARY METRIC)
+2. ✅ **Focus Accuracy** > 85% precision (correct relevant context)
+3. ✅ **Detail Completeness** > 80% recall (supporting info included)
+4. ✅ **Global Coherence** > 4.0/5.0 rating (broader understanding)
+5. ✅ **Personalization Accuracy** > 90% (correct user preferences)
+6. ✅ **Update Detection** > 95% recall (identifies what's new)
+7. ✅ Query latency < 100ms p95 (secondary to quality)
+8. ✅ Token accuracy = 100%
+9. ✅ User satisfaction > 4/5
 
 **What We Don't Measure**:
 - ❌ "% of code using SQLite"
 - ❌ "Lines of PostgreSQL queries"
 - ❌ "Number of Elasticsearch nodes"
+- ❌ "Pure retrieval speed without quality"
 
-**Why**: Users care about fast, accurate retrieval - not what database we use
+**Why**: Users care about **intelligent summaries** and **context understanding**, not just fast queries or what database we use
+
+**Key Insight**: Summarization quality IS the performance metric
 
 ---
 

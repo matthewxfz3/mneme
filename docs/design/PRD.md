@@ -16,18 +16,21 @@
 
 ## Vision
 
-> "Every AI agent should have instant access to all relevant context with optimal performance, regardless of where that information originated or how it's stored."
+> "AI agents should have an automatically updated context graph that provides intelligent summarization of history, personalization, and relevant details - giving them focus, depth, and global understanding."
 
 **Core Goals** (Technology-Agnostic):
-1. **Performance**: Sub-100ms retrieval at any scale
-2. **Efficient Indexing**: Modern hybrid approaches (sparse + dense + graph)
-3. **Accurate Retrieval**: Best-in-class ranking and context assembly
-4. **Flexible Storage**: Pluggable backends optimized for use case
+1. **Context Graph**: Automatically updated graph of relationships between context items
+2. **Intelligent Summarization**: High-quality summaries (history + personalization + updates + focus/detail/global)
+3. **Efficient Indexing**: Find relevant content quickly (sparse + dense + graph traversal)
+4. **Auto-Update**: Context refreshes automatically from multiple sources
+5. **Quality Performance**: Summarization quality is the primary metric
+
+**What We Build** = Indexing + Summarization (not just retrieval)
 
 **Phased Delivery**:
-- **M1** (✅ Complete): Prove core algorithms with SQLite reference implementation
-- **M2** (🔲 Planned): Multi-source adapters + advanced indexing (vectors, graphs)
-- **M3** (🔲 Future): Scale-out architecture + distributed retrieval
+- **M1** (✅ Complete): Indexing foundation with SQLite + basic context assembly
+- **M2** (🔲 Planned): Context graph + multi-source auto-update + intelligent summarization
+- **M3** (🔲 Future): Advanced summarization (personalization, focus/detail/global), distributed graph
 
 ---
 
@@ -35,26 +38,29 @@
 
 ### Current State
 
-AI agents suffer from **fragmented context**:
+AI agents lack **intelligent context understanding**:
 
 **OpenClaw Specific** (M1 addresses):
 - 5 fragmented systems (memory/, sessions/, context-engine/, compaction.ts, JSONL files)
 - 20-30% token estimation error
 - No cross-session search
-- Silent failures, slow keyword-only search
+- No historical context summarization
+- No understanding of user preferences/personalization
 
 **Industry-Wide** (M2-M3 address):
-- Siloed sources (Slack, Discord, Google Chat isolated)
-- Limited search (agents only access current session)
-- Poor integration (adding sources requires modifying agent code)
-- Performance issues (sequential file scanning doesn't scale)
+- **Fragmented sources**: Slack, Discord, Google Chat exist in silos, no unified view
+- **No context graph**: Relationships between conversations, topics, and entities are lost
+- **Poor summarization**: Agents repeat history instead of synthesizing it
+- **Missing personalization**: No memory of user preferences, context, or patterns
+- **Static context**: Manual updates only, no auto-refresh from sources
 
 ### Impact
 
-- Agents say "I don't have that context" when information exists
-- Users manually copy-paste context between conversations
-- Development velocity slows as context code spreads across codebase
-- Poor user experience (agents feel "forgetful")
+- **Agents lack context awareness**: Say "I don't have that context" when information exists
+- **Poor summarization quality**: Cannot provide focused view, detailed view, and global picture simultaneously
+- **No personalization**: Don't remember user preferences, past decisions, or context patterns
+- **Manual context management**: Users manually copy-paste context between conversations
+- **Fragmented understanding**: No synthesis of history, updates, and current focus
 
 ---
 
@@ -163,34 +169,48 @@ AI agents suffer from **fragmented context**:
 
 ---
 
-### Milestone 2: Multi-Source Local (🔲 PLANNED)
+### Milestone 2: Context Graph + Intelligent Summarization (🔲 PLANNED)
 
-**Scope**: Extend local library with multiple data sources
-**Timeline**: Q2-Q3 2026 (8-12 weeks)
+**Scope**: Context graph with auto-updates and intelligent summarization
+**Timeline**: Q2-Q3 2026 (10-14 weeks)
 
 #### Functional Requirements
 
-**FR-M2.1: Adapter System**
-- 🔲 SourceAdapter interface
-- 🔲 Adapter registry and lifecycle management
-- 🔲 Hot-reload adapters without restart
+**FR-M2.1: Context Graph**
+- 🔲 Graph data model (nodes: messages/entities, edges: relationships)
+- 🔲 Entity extraction (people, topics, decisions, actions)
+- 🔲 Relationship detection (references, continuations, related topics)
+- 🔲 Graph traversal for context discovery
+- 🔲 Temporal graph (track evolution over time)
 
-**FR-M2.2: Source Adapters**
-- 🔲 Slack export importer (.zip → SQLite)
+**FR-M2.2: Intelligent Summarization**
+- 🔲 **History Summarization**: Compress conversation history into key points
+- 🔲 **Context Window Summarization**: Summarize previous context windows
+- 🔲 **Personalization Extraction**: Detect and store user preferences, patterns, decisions
+- 🔲 **Update Summarization**: Identify what's new since last interaction
+- 🔲 **Multi-View Generation**:
+  - Focus view (immediate relevant context)
+  - Detail view (supporting information)
+  - Global view (broader context and relationships)
+
+**FR-M2.3: Auto-Update System**
+- 🔲 File watcher for local sources (live updates)
+- 🔲 Poll-based updates for exports (Slack, Discord)
+- 🔲 Incremental indexing (only update changed content)
+- 🔲 Update notification system
+
+**FR-M2.4: Multi-Source Adapters**
+- 🔲 SourceAdapter interface
+- 🔲 Slack export importer (.zip → graph)
 - 🔲 Discord data package importer
 - 🔲 Markdown/PDF document ingestion
 - 🔲 Email (MBOX) importer
-- 🔲 File watcher for live updates
 
-**FR-M2.3: Vector Search**
-- 🔲 sqlite-vec extension integration
-- 🔲 Embedding generation (configurable provider)
-- 🔲 Hybrid search with dense vectors
-
-**FR-M2.4: Deduplication**
-- 🔲 Content-hash based deduplication
-- 🔲 Cross-source duplicate detection
-- 🔲 Preserve source attribution
+**FR-M2.5: Advanced Indexing**
+- 🔲 Vector search (sqlite-vec or pgvector)
+- 🔲 Graph indexing for fast traversal
+- 🔲 Entity index (people, topics, decisions)
+- 🔲 Temporal index (time-based queries)
 
 #### Non-Functional Requirements
 
@@ -282,20 +302,44 @@ AI agents suffer from **fragmented context**:
 
 ### M2 Use Cases (🔲 Planned)
 
-**UC-M2.1: Multi-Source Retrieval**
-- User asks: "API rate limit decision?"
-- Mneme searches Slack + Discord exports + OpenClaw sessions + local markdown notes
-- Returns top 3 contexts with source attribution
+**UC-M2.1: Intelligent Context Summarization**
+- User asks: "What's the status of the auth refactor project?"
+- Mneme provides three-view summary:
+  - **Focus**: "Currently implementing OAuth2 migration, PR #234 in review"
+  - **Details**: "Decided against JWT approach due to token rotation complexity. Using Passport.js. Bob has concerns about session store."
+  - **Global**: "Part of Q2 security initiative. Related to API redesign project. Affects 3 microservices."
 
-**UC-M2.2: Document Ingestion**
-- User drops `stripe-api-v2.pdf` into watched folder
-- Mneme extracts text, chunks, generates embeddings, indexes
-- Agent can answer: "How do I verify Stripe webhook signatures?"
+**UC-M2.2: Personalization Memory**
+- User always prefers TypeScript over JavaScript
+- User typically works 9am-5pm PST
+- User has context of working on e-commerce backend
+- Agent automatically:
+  - Suggests TypeScript when showing code
+  - Summarizes relevant e-commerce context
+  - Prioritizes updates during work hours
 
-**UC-M2.3: Adapter Plugin**
-- Developer installs: `npm install @mneme/adapter-notion`
-- Configures with 3 lines of code
-- Notion pages now searchable alongside other sources
+**UC-M2.3: History + Update Synthesis**
+- User returns after 3 days absence
+- Mneme provides:
+  - **History Summary**: "Last session: Debugging PostgreSQL connection pool issue"
+  - **Updates**: "New Slack discussion about same issue from team, PR #245 merged with fix"
+  - **Context Window**: "Previous conversation context: Performance optimization sprint"
+
+**UC-M2.4: Context Graph Traversal**
+- User mentions "the API redesign"
+- Mneme traverses graph to find:
+  - Original decision discussion (Slack, 2 weeks ago)
+  - Related technical spec (Google Doc)
+  - Implementation PR (GitHub)
+  - Recent blocker (Discord message yesterday)
+- Returns unified summary with relationships
+
+**UC-M2.5: Auto-Update Multi-Source**
+- Morning: Team discusses in Slack
+- Afternoon: Design doc updated in local markdown
+- Evening: Code PR created on GitHub
+- Next day: User opens OpenClaw
+- Agent: "Caught up on 3 sources. Slack decided on approach X, doc updated with diagrams, PR #123 implements it."
 
 ---
 
@@ -334,12 +378,18 @@ AI agents suffer from **fragmented context**:
 
 ### M2 Metrics (🔲 Targets)
 
-| Metric | Target |
-|--------|--------|
-| Source Coverage | 5+ adapters (Slack, Discord, PDF, Markdown, Email) |
-| Retrieval Precision | >0.80 (across sources) |
-| Vector Search Latency | p95 < 100ms |
-| Community Adapters | 3+ third-party npm packages |
+| Metric | Target | What It Measures |
+|--------|--------|------------------|
+| **Summarization Quality** | >4.0/5.0 user rating | Primary metric: How well summaries capture context |
+| **Focus Accuracy** | >0.85 precision | Correct identification of immediately relevant context |
+| **Detail Completeness** | >0.80 recall | Supporting information included when needed |
+| **Global Coherence** | >4.0/5.0 rating | Broader context understanding |
+| **Personalization Accuracy** | >0.90 precision | Correct extraction of user preferences |
+| **Update Detection** | >0.95 recall | Successfully identifies what's new |
+| Context Graph Coverage | 100K+ nodes | Graph scale (messages + entities) |
+| Graph Traversal Latency | p95 < 50ms | Fast relationship discovery |
+| Auto-Update Latency | <5 minutes | Time from source update to indexed |
+| Source Coverage | 5+ adapters | Slack, Discord, PDF, Markdown, Email |
 
 ### M3 Metrics (🔲 Targets)
 

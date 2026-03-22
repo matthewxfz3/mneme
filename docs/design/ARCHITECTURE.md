@@ -8,10 +8,12 @@
 
 ## Overview
 
-Mneme provides unified context management for AI agents through 3 milestones:
-- **M1** (✅): Local SQLite library with hybrid search
-- **M2** (🔲): Multi-source local adapters
-- **M3** (🔲): Multi-tenant API server
+Mneme builds an intelligent **context graph** for AI agents with automatic updates and high-quality summarization:
+- **M1** (✅): Indexing foundation - Local SQLite with hybrid search
+- **M2** (🔲): Context graph + intelligent summarization + multi-source auto-update
+- **M3** (🔲): Distributed graph + advanced summarization + multi-tenant API
+
+**Core Philosophy**: Indexing + Summarization = Useful Context
 
 This document describes the technical architecture for all milestones.
 
@@ -204,34 +206,144 @@ OpenClaw → ContextEngine.assemble({tokenBudget, strategy: 'hybrid'})
 
 ---
 
-## Milestone 2: Multi-Source Local (🔲 Planned)
+## Milestone 2: Context Graph + Intelligent Summarization (🔲 Planned)
 
-### Extended Architecture
+### Context Graph Architecture
 
 ```
-┌─────────────────────────────────────┐
-│     MnemeContextEngine (Same)       │
-├─────────────────────────────────────┤
-│  Service │ Search │ Ranking (Same)  │
-│  Assembly │ Tokens (Same)           │
-│  + Adapter Registry (NEW)           │
-├─────────────────────────────────────┤
-│  Source Adapters (NEW)              │
-│  Slack│Discord│PDF│Markdown│Email   │
-├─────────────────────────────────────┤
-│         SQLite Database             │
-│  + message_vectors (sqlite-vec)     │
-└─────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│        MnemeContextEngine (Enhanced)                 │
+│  • Indexing + Summarization (Core Value)             │
+├──────────────────────────────────────────────────────┤
+│  Graph Layer (NEW)                                   │
+│  • EntityExtractor  • RelationshipDetector           │
+│  • GraphTraversal   • TemporalGraph                  │
+├──────────────────────────────────────────────────────┤
+│  Summarization Engine (NEW)                          │
+│  • HistorySummarizer    • PersonalizationExtractor   │
+│  • UpdateDetector       • MultiViewGenerator         │
+│  • (Focus/Detail/Global Views)                       │
+├──────────────────────────────────────────────────────┤
+│  Auto-Update System (NEW)                            │
+│  • FileWatcher  • PollingScheduler  • UpdateQueue    │
+├──────────────────────────────────────────────────────┤
+│  Indexing Layer (Enhanced from M1)                   │
+│  • Search • Ranking • Assembly • Tokens              │
+├──────────────────────────────────────────────────────┤
+│  Adapter Registry                                    │
+│  Slack│Discord│PDF│Markdown│Email                    │
+├──────────────────────────────────────────────────────┤
+│         SQLite Database (Extended Schema)            │
+│  • messages + messages_fts (M1)                      │
+│  • entities (people, topics, decisions) (NEW)        │
+│  • relationships (references, related) (NEW)         │
+│  • summaries (history, personalization) (NEW)        │
+│  • message_vectors (sqlite-vec) (NEW)                │
+└──────────────────────────────────────────────────────┘
         ↑
-   External Sources
+   External Sources (Auto-Updated)
 ```
 
-### New Components
+### New Components (M2)
 
-**AdapterRegistry** (Planned)
-- Manages source adapter lifecycle
-- Hot-reload support
-- Adapter discovery and initialization
+#### Graph Layer
+
+**EntityExtractor** (Planned)
+- Extract entities from messages: people, topics, decisions, actions, questions
+- Named Entity Recognition (NER) using patterns + optional LLM
+- Entity resolution (merge duplicates: "Bob" = "Robert Smith")
+- Entity metadata: frequency, last mentioned, sentiment
+
+**RelationshipDetector** (Planned)
+- Detect relationships between messages/entities
+- Types: `references` (replies), `related_topic`, `decision_about`, `action_item`, `question_answer`
+- Strength scoring (explicit mention vs implicit relationship)
+- Temporal relationships (before/after, continuation)
+
+**GraphTraversal** (Planned)
+- BFS/DFS traversal for context discovery
+- Path finding (shortest path between topics)
+- Subgraph extraction (all context related to entity)
+- Ranking by graph centrality
+
+**TemporalGraph** (Planned)
+- Time-aware graph (track evolution)
+- Snapshot queries ("graph state at timestamp")
+- Temporal patterns (recurring topics, decay)
+
+#### Summarization Engine
+
+**HistorySummarizer** (Planned)
+- Compress conversation history into key points
+- Identify: decisions made, questions asked, topics discussed
+- Progressive summarization (recent = detailed, old = condensed)
+- Formats: bullet points, narrative, timeline
+
+**PersonalizationExtractor** (Planned)
+- Detect user preferences: language (TypeScript vs JavaScript), frameworks, patterns
+- User context: role, team, projects, timezone
+- Behavioral patterns: work hours, communication style, common tasks
+- Store in `user_preferences` table
+
+**UpdateDetector** (Planned)
+- Compare current state vs last interaction
+- Identify: new messages, changed entities, new relationships
+- Categorize updates: urgent, informational, blocking
+- Generate update summary: "3 new messages about auth refactor"
+
+**MultiViewGenerator** (Planned)
+- **Focus View**: Immediate relevant context (1-3 items)
+  - Query-specific: "What's relevant to current question?"
+  - Ranked by recency + relevance
+- **Detail View**: Supporting information (5-10 items)
+  - Background, related discussions, decisions
+  - Includes entity relationships
+- **Global View**: Broader context (high-level summary)
+  - Project status, team updates, related initiatives
+  - Graph-based: connected topics and themes
+
+Output format:
+```typescript
+interface MultiViewSummary {
+  focus: {
+    items: ContextItem[];
+    summary: string;
+    confidence: number;
+  };
+  detail: {
+    items: ContextItem[];
+    categories: string[];  // e.g., "decisions", "questions"
+    summary: string;
+  };
+  global: {
+    themes: string[];
+    relationships: string[];
+    summary: string;
+  };
+}
+```
+
+#### Auto-Update System
+
+**FileWatcher** (Planned)
+- Watch local files/directories for changes
+- Debounce updates (avoid thrashing)
+- Trigger incremental re-indexing
+- Uses `chokidar` or native Node.js watcher
+
+**PollingScheduler** (Planned)
+- Poll external sources (exports, APIs)
+- Configurable intervals (e.g., every 5 minutes)
+- Diff detection (only process changes)
+- Retry logic for transient failures
+
+**UpdateQueue** (Planned)
+- Async queue for update processing
+- Priority: urgent updates first
+- Batch updates for efficiency
+- Progress tracking and notifications
+
+#### Source Adapters
 
 **SourceAdapter Interface** (Planned)
 ```typescript
@@ -248,21 +360,156 @@ interface SourceAdapter {
   // Data
   fetch(): AsyncIterator<ContextItem>;
   onUpdate?(callback: (item: ContextItem) => void): void;
+
+  // Metadata
+  getLastUpdate(): Promise<Date>;
+  getStats(): Promise<AdapterStats>;
 }
 ```
 
 **Planned Adapters**:
-1. SlackExportAdapter (.zip files)
-2. DiscordDataAdapter (data packages)
-3. PDFDocumentAdapter (pdf-parse)
-4. MarkdownAdapter (local .md files)
-5. EmailAdapter (MBOX format)
+1. **SlackExportAdapter**: .zip exports → messages + entities
+2. **DiscordDataAdapter**: Data packages → messages + entities
+3. **PDFDocumentAdapter**: PDFs → chunked content + entities
+4. **MarkdownAdapter**: .md files → structured content + links
+5. **EmailAdapter**: MBOX → email threads + participants
 
-**Vector Search Extension**:
-- sqlite-vec virtual table
-- Async embedding generation queue
-- Configurable embedding providers (OpenAI, local)
-- Hybrid scoring: 0.5×FTS + 0.3×vector + 0.2×temporal
+### Extended Database Schema (M2)
+
+M1 schema + new tables for context graph:
+
+```sql
+-- Entities (extracted from messages)
+CREATE TABLE entities (
+  entity_id TEXT PRIMARY KEY,
+  entity_type TEXT CHECK(entity_type IN ('person', 'topic', 'decision', 'action', 'question', 'project')),
+  name TEXT NOT NULL,
+  canonical_name TEXT,  -- Resolved name (e.g., "Bob" → "Robert Smith")
+  first_mentioned INTEGER,  -- Timestamp
+  last_mentioned INTEGER,
+  mention_count INTEGER DEFAULT 1,
+  metadata TEXT  -- JSON: {sentiment, aliases, context}
+);
+
+-- Relationships (between messages and entities)
+CREATE TABLE relationships (
+  relationship_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  source_id TEXT NOT NULL,  -- message_id or entity_id
+  target_id TEXT NOT NULL,  -- message_id or entity_id
+  relationship_type TEXT CHECK(relationship_type IN (
+    'references',      -- Message replies to message
+    'related_topic',   -- Messages share topic/entity
+    'decision_about',  -- Decision about entity
+    'action_item',     -- Action related to entity
+    'question_answer', -- Q&A relationship
+    'continuation'     -- Conversation continuation
+  )),
+  strength REAL DEFAULT 1.0,  -- Relationship strength (0-1)
+  created_at INTEGER,
+  metadata TEXT
+);
+
+-- Summaries (generated summaries for different scopes)
+CREATE TABLE summaries (
+  summary_id TEXT PRIMARY KEY,
+  scope_type TEXT CHECK(scope_type IN ('conversation', 'topic', 'entity', 'time_window', 'personalization')),
+  scope_id TEXT,  -- conversation_id, entity_id, or time range
+  summary_type TEXT CHECK(summary_type IN ('history', 'focus', 'detail', 'global', 'update', 'personalization')),
+  content TEXT NOT NULL,
+  token_count INTEGER,
+  source_message_ids TEXT,  -- JSON array
+  created_at INTEGER,
+  valid_until INTEGER,  -- Expiration timestamp (invalidate on new data)
+  metadata TEXT  -- JSON: {confidence, coverage, version}
+);
+
+-- User preferences (personalization data)
+CREATE TABLE user_preferences (
+  preference_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  category TEXT,  -- e.g., 'language', 'framework', 'work_pattern'
+  key TEXT,       -- e.g., 'preferred_language'
+  value TEXT,     -- e.g., 'TypeScript'
+  confidence REAL DEFAULT 1.0,  -- How confident (0-1)
+  evidence_count INTEGER DEFAULT 1,  -- How many observations
+  first_observed INTEGER,
+  last_observed INTEGER,
+  metadata TEXT
+);
+
+-- Vector embeddings (optional, for semantic search)
+CREATE VIRTUAL TABLE message_vectors USING vec0(
+  message_id TEXT PRIMARY KEY,
+  embedding FLOAT[768]  -- Embedding dimension (e.g., OpenAI ada-002)
+);
+
+-- Indexes for graph traversal
+CREATE INDEX idx_relationships_source ON relationships(source_id, relationship_type);
+CREATE INDEX idx_relationships_target ON relationships(target_id, relationship_type);
+CREATE INDEX idx_entities_type ON entities(entity_type, last_mentioned DESC);
+CREATE INDEX idx_summaries_scope ON summaries(scope_type, scope_id, summary_type);
+```
+
+### Data Flows (M2)
+
+**Ingestion + Graph Building**:
+```
+Source → Adapter.fetch() → Message
+  → EntityExtractor.extract() → entities INSERT
+  → RelationshipDetector.detect() → relationships INSERT
+  → MessageVectorizer.embed() → message_vectors INSERT (async)
+  → MnemeService.addMessage() → messages INSERT
+  → Auto-trigger FTS5 update
+```
+
+**Intelligent Summarization Flow**:
+```
+User Query → MultiViewGenerator.generate()
+  → Parallel:
+    - HistorySummarizer.summarize(conversation)
+    - PersonalizationExtractor.getPreferences(user)
+    - UpdateDetector.getUpdates(since: lastInteraction)
+  → GraphTraversal.getRelatedContext(query)
+  → MultiViewGenerator.assemble({
+      focus: [most relevant items],
+      detail: [supporting context],
+      global: [broader themes + relationships]
+    })
+  → summaries INSERT (cache for reuse)
+  → Return MultiViewSummary
+```
+
+**Auto-Update Flow**:
+```
+FileWatcher detects change in markdown file
+  → UpdateQueue.enqueue({source: 'markdown', file: 'api-spec.md'})
+  → MarkdownAdapter.fetch() → new ContextItems
+  → UpdateDetector.diff(old, new) → identify changes
+  → EntityExtractor + RelationshipDetector → update graph
+  → Invalidate affected summaries (set valid_until to past)
+  → Emit update notification
+```
+
+### Performance Characteristics (M2 Targets)
+
+@ 100K messages + 50K entities + 200K relationships:
+
+| Operation | Target | Notes |
+|-----------|--------|-------|
+| Entity extraction | <50ms/message | Pattern-based (no LLM) |
+| Relationship detection | <100ms/message | Graph updates |
+| Graph traversal (BFS) | <50ms | 3-hop neighborhood |
+| History summarization | <500ms | LLM-based compression |
+| Multi-view generation | <1s | Parallel processing |
+| Auto-update processing | <5 minutes | From file change to indexed |
+| Vector search (with embeddings) | <100ms | Hybrid with FTS5 |
+
+**Storage**:
+- Base (M1): ~100MB for 100K messages
+- Entities: +10MB (50K entities)
+- Relationships: +20MB (200K relationships)
+- Summaries: +5MB (cached summaries)
+- Vectors: +200MB (100K × 768D embeddings)
+- **Total**: ~335MB for 100K messages with full graph
 
 ---
 
