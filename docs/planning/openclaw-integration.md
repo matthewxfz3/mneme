@@ -25,47 +25,37 @@ This document outlines the strategy for integrating Mneme with OpenClaw while ma
 
 ### Current OpenClaw (Before Mneme)
 
-```
-┌─────────────────────────────────────┐
-│      OpenClaw Agent (Monolithic)    │
-├─────────────────────────────────────┤
-│                                     │
-│  src/memory/manager.ts              │
-│  ├─ Vector search (SQLite+vec)      │
-│  ├─ Session file watching           │
-│  └─ Embedding generation            │
-│                                     │
-│  src/config/sessions.ts             │
-│  ├─ Session metadata (JSON)         │
-│  └─ Transcript logs (JSONL)         │
-│                                     │
-│  src/agents/compaction.ts           │
-│  └─ Context summarization           │
-│                                     │
-└─────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph OpenClaw["OpenClaw Agent (Monolithic)"]
+        MEMORY["src/memory/manager.ts<br/>• Vector search (SQLite+vec)<br/>• Session file watching<br/>• Embedding generation"]
+
+        SESSIONS["src/config/sessions.ts<br/>• Session metadata (JSON)<br/>• Transcript logs (JSONL)"]
+
+        COMPACTION["src/agents/compaction.ts<br/>• Context summarization"]
+    end
+
+    style MEMORY fill:#7B68EE,stroke:#5A4CB8,stroke-width:2px,color:#fff
+    style SESSIONS fill:#7B68EE,stroke:#5A4CB8,stroke-width:2px,color:#fff
+    style COMPACTION fill:#7B68EE,stroke:#5A4CB8,stroke-width:2px,color:#fff
 ```
 
 ### With Mneme (After Integration)
 
-```
-┌─────────────────────────────────────┐
-│      OpenClaw Agent (Thin)          │
-├─────────────────────────────────────┤
-│                                     │
-│  src/memory/manager.ts              │
-│  └─ Shim Layer ──────┐              │
-│                      │              │
-└──────────────────────┼──────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────┐
-│         Mneme Platform              │
-├─────────────────────────────────────┤
-│  • Multi-source ingestion           │
-│  • Unified storage                  │
-│  • Hybrid retrieval                 │
-│  • Cross-source search              │
-└─────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph OpenClaw["OpenClaw Agent (Thin)"]
+        SHIM["src/memory/manager.ts<br/>Shim Layer"]
+    end
+
+    subgraph Mneme["Mneme Platform"]
+        FEATURES["• Multi-source ingestion<br/>• Unified storage<br/>• Hybrid retrieval<br/>• Cross-source search"]
+    end
+
+    SHIM -->|API calls| FEATURES
+
+    style SHIM fill:#7B68EE,stroke:#5A4CB8,stroke-width:2px,color:#fff
+    style FEATURES fill:#4A90E2,stroke:#2E5C8A,stroke-width:2px,color:#fff
 ```
 
 ---

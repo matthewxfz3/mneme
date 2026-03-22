@@ -57,17 +57,22 @@ Build **Mneme** as a standalone microservice that:
 
 ### Architecture
 
-```
-┌──────────────────────────────────────┐
-│         Mneme Platform               │
-├──────────────────────────────────────┤
-│  Ingestion → Storage → Retrieval     │
-└──────────────────────────────────────┘
-     ▲                          │
-     │                          ▼
- Sources                    Clients
-(Google Chat,            (OpenClaw,
- Slack, Docs)             CLI, MCP)
+```mermaid
+graph LR
+    Sources[Sources<br/>Google Chat, Slack, Docs]
+    Clients[Clients<br/>OpenClaw, CLI, MCP]
+
+    subgraph Platform["Mneme Platform"]
+        INGEST[Ingestion] --> STORAGE[Storage]
+        STORAGE --> RETRIEVAL[Retrieval]
+    end
+
+    Sources -->|data| INGEST
+    RETRIEVAL -->|context| Clients
+
+    style INGEST fill:#50C878,stroke:#3A9B5C,stroke-width:2px,color:#fff
+    style STORAGE fill:#E67E22,stroke:#B8621B,stroke-width:2px,color:#fff
+    style RETRIEVAL fill:#9370DB,stroke:#6A4FA3,stroke-width:2px,color:#fff
 ```
 
 ### Key Components

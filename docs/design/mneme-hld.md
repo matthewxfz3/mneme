@@ -24,29 +24,38 @@
 
 ### System Context (C4 Level 1)
 
-```
-┌─────────────────────────────────────────────────┐
-│                 Users & Agents                  │
-├─────────────────────────────────────────────────┤
-│  Developers  │  AI Agents  │  End Users        │
-└──────────────┴─────────────┴───────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────┐
-│              Mneme Platform                     │
-│  Unified Context Management for AI Agents       │
-└─────────────────────────────────────────────────┘
-         │                        │
-         ▼                        ▼
-┌───────────────┐        ┌──────────────────┐
-│ Data Sources  │        │  External APIs   │
-├───────────────┤        ├──────────────────┤
-│• Google Chat  │        │• OpenAI          │
-│• Slack        │        │  (Embeddings)    │
-│• OpenClaw     │        │• Gemini          │
-│• Documents    │        │  (Embeddings)    │
-│• RSS Feeds    │        └──────────────────┘
-└───────────────┘
+```mermaid
+graph TB
+    subgraph Users["Users & Agents"]
+        DEV[Developers]
+        AGENT[AI Agents]
+        USER[End Users]
+    end
+
+    MNEME[Mneme Platform<br/>Unified Context Management<br/>for AI Agents]
+
+    subgraph Sources["Data Sources"]
+        GCHAT[Google Chat]
+        SLACK[Slack]
+        OPENCLAW[OpenClaw]
+        DOCS[Documents]
+        RSS[RSS Feeds]
+    end
+
+    subgraph APIs["External APIs"]
+        OPENAI[OpenAI<br/>Embeddings]
+        GEMINI[Gemini<br/>Embeddings]
+    end
+
+    DEV & AGENT & USER -->|interact| MNEME
+
+    GCHAT & SLACK & OPENCLAW & DOCS & RSS -->|data| MNEME
+
+    MNEME -->|embeddings| OPENAI
+    MNEME -->|embeddings| GEMINI
+
+    style MNEME fill:#4A90E2,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style AGENT fill:#7B68EE,stroke:#5A4CB8,stroke-width:2px,color:#fff
 ```
 
 **Key Relationships**:
@@ -58,56 +67,62 @@
 
 ### Container Diagram (C4 Level 2)
 
-```
-┌─────────────────────────────────────────────────────┐
-│                 Mneme Platform                      │
-├─────────────────────────────────────────────────────┤
-│                                                     │
-│  ┌──────────────┐         ┌──────────────┐        │
-│  │  API Gateway │◀────────│   Clients    │        │
-│  │  (REST/gRPC) │         │  - OpenClaw  │        │
-│  └──────┬───────┘         │  - CLI       │        │
-│         │                 │  - MCP       │        │
-│         ▼                 └──────────────┘        │
-│  ┌──────────────────────────────────────┐        │
-│  │     Mneme Core Services              │        │
-│  ├──────────────────────────────────────┤        │
-│  │                                      │        │
-│  │  ┌────────────┐  ┌────────────┐    │        │
-│  │  │ Ingestion  │─▶│  Storage   │    │        │
-│  │  │  Service   │  │  Service   │    │        │
-│  │  └────────────┘  └──────┬─────┘    │        │
-│  │                          │           │        │
-│  │  ┌────────────┐         │           │        │
-│  │  │ Retrieval  │◀────────┘           │        │
-│  │  │  Service   │                     │        │
-│  │  └────────────┘                     │        │
-│  │                                      │        │
-│  │  ┌────────────────────────────────┐ │        │
-│  │  │   Background Workers           │ │        │
-│  │  ├────────────────────────────────┤ │        │
-│  │  │• Embedding Queue               │ │        │
-│  │  │• Entity Extraction             │ │        │
-│  │  │• Summarization                 │ │        │
-│  │  └────────────────────────────────┘ │        │
-│  └──────────────────────────────────────┘        │
-│                                                     │
-│  ┌──────────────────────────────────────┐        │
-│  │         Storage Layer                 │        │
-│  ├──────────────────────────────────────┤        │
-│  │  SQLite + sqlite-vec  │  Redis       │        │
-│  │  (Primary Storage)    │  (Cache)     │        │
-│  └──────────────────────────────────────┘        │
-│                                                     │
-└─────────────────────────────────────────────────────┘
-         │                          │
-         ▼                          ▼
-┌───────────────┐        ┌──────────────────┐
-│ Data Sources  │        │  External APIs   │
-│  (Webhooks,   │        │  (Embeddings)    │
-│   Polls,      │        │                  │
-│   Files)      │        │                  │
-└───────────────┘        └──────────────────┘
+```mermaid
+graph TB
+    subgraph Clients
+        OPENCLAW[OpenClaw]
+        CLI[CLI Tool]
+        MCP[MCP Clients]
+    end
+
+    subgraph Platform["Mneme Platform"]
+        GATEWAY[API Gateway<br/>REST/gRPC]
+
+        subgraph Core["Core Services"]
+            INGEST[Ingestion Service]
+            STORAGE[Storage Service]
+            RETRIEVAL[Retrieval Service]
+        end
+
+        subgraph Workers["Background Workers"]
+            WORKER_EMB[Embedding Queue]
+            WORKER_EXT[Entity Extraction]
+            WORKER_SUM[Summarization]
+        end
+
+        subgraph Data["Storage Layer"]
+            SQLITE[(SQLite + sqlite-vec<br/>Primary Storage)]
+            REDIS[(Redis<br/>Cache)]
+        end
+    end
+
+    subgraph Sources["Data Sources"]
+        SRC[Webhooks, Polls, Files]
+    end
+
+    subgraph APIs["External APIs"]
+        API[Embeddings APIs]
+    end
+
+    OPENCLAW & CLI & MCP -->|HTTP/gRPC| GATEWAY
+    GATEWAY --> INGEST
+    GATEWAY --> RETRIEVAL
+    INGEST --> STORAGE
+    RETRIEVAL --> STORAGE
+    STORAGE --> SQLITE
+    STORAGE --> REDIS
+    INGEST -->|queue| WORKER_EMB & WORKER_EXT & WORKER_SUM
+    WORKER_EMB & WORKER_EXT & WORKER_SUM --> SQLITE
+
+    SRC -->|data| INGEST
+    WORKER_EMB & WORKER_SUM -->|API calls| API
+
+    style GATEWAY fill:#4A90E2,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style INGEST fill:#50C878,stroke:#3A9B5C,stroke-width:2px,color:#fff
+    style STORAGE fill:#E67E22,stroke:#B8621B,stroke-width:2px,color:#fff
+    style RETRIEVAL fill:#9370DB,stroke:#6A4FA3,stroke-width:2px,color:#fff
+    style SQLITE fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style REDIS fill:#3498DB,stroke:#2874A6,stroke-width:2px,color:#fff
 ```
 
 ---
@@ -149,35 +164,33 @@ POST   /webhooks/github
 **Responsibility**: Collect context from heterogeneous sources
 
 **Architecture**:
-```
-┌──────────────────────────────────────┐
-│      Ingestion Service               │
-├──────────────────────────────────────┤
-│                                      │
-│  ┌────────────────────────────────┐ │
-│  │    Adapter Registry            │ │
-│  ├────────────────────────────────┤ │
-│  │  • WebhookAdapter              │ │
-│  │  • PollAdapter                 │ │
-│  │  • StreamAdapter               │ │
-│  │  • FileWatcherAdapter          │ │
-│  └────────────────────────────────┘ │
-│                │                     │
-│                ▼                     │
-│  ┌────────────────────────────────┐ │
-│  │   Deduplication Engine         │ │
-│  │   (Content-based hashing)      │ │
-│  └────────────────────────────────┘ │
-│                │                     │
-│                ▼                     │
-│  ┌────────────────────────────────┐ │
-│  │   Normalization Pipeline       │ │
-│  │   (Unified schema)             │ │
-│  └────────────────────────────────┘ │
-│                │                     │
-│                ▼                     │
-│           Storage Service            │
-└──────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph Ingestion["Ingestion Service"]
+        REGISTRY[Adapter Registry]
+
+        subgraph Adapters["Source Adapters"]
+            WEBHOOK[WebhookAdapter]
+            POLL[PollAdapter]
+            STREAM[StreamAdapter]
+            FILEWATCH[FileWatcherAdapter]
+        end
+
+        DEDUP[Deduplication Engine<br/>Content-based hashing]
+        NORMALIZE[Normalization Pipeline<br/>Unified schema]
+    end
+
+    SOURCES[External Sources] --> WEBHOOK & POLL & STREAM & FILEWATCH
+
+    REGISTRY -.manages.- WEBHOOK & POLL & STREAM & FILEWATCH
+
+    WEBHOOK & POLL & STREAM & FILEWATCH --> DEDUP
+    DEDUP --> NORMALIZE
+    NORMALIZE --> STORAGE[Storage Service]
+
+    style REGISTRY fill:#4A90E2,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style DEDUP fill:#E67E22,stroke:#B8621B,stroke-width:2px,color:#fff
+    style NORMALIZE fill:#50C878,stroke:#3A9B5C,stroke-width:2px,color:#fff
 ```
 
 **Adapters** (Pluggable):
@@ -345,48 +358,37 @@ function calculateScore(context: Context, query: string): number {
 
 ### Ingestion Flow
 
-```
-┌─────────────────┐
-│  Google Chat    │
-│  sends message  │
-└────────┬────────┘
-         │
-         ▼ HTTPS POST
-┌─────────────────────┐
-│ Webhook Handler     │
-│ 1. Verify signature │
-│ 2. Return 200 OK    │
-└────────┬────────────┘
-         │
-         ▼ (async)
-┌─────────────────────┐
-│ GoogleChatAdapter   │
-│ 1. Parse event      │
-│ 2. Extract content  │
-└────────┬────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│ Deduplication       │
-│ 1. Hash content     │
-│ 2. Check if exists  │
-└────────┬────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│ Storage Service     │
-│ 1. Insert context   │
-│ 2. Update FTS       │
-│ 3. Queue embedding  │
-└────────┬────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│ Embedding Worker    │
-│ 1. Batch contexts   │
-│ 2. Call OpenAI      │
-│ 3. Update vector DB │
-└─────────────────────┘
+```mermaid
+sequenceDiagram
+    participant GChat as Google Chat
+    participant Webhook as Webhook Handler
+    participant Adapter as GoogleChatAdapter
+    participant Dedup as Deduplication
+    participant Storage as Storage Service
+    participant Worker as Embedding Worker
+
+    GChat->>Webhook: HTTPS POST (message)
+    Webhook->>Webhook: 1. Verify signature
+    Webhook->>Webhook: 2. Return 200 OK
+    Webhook-->>GChat: 200 OK
+
+    Webhook->>Adapter: (async) Process event
+    Adapter->>Adapter: 1. Parse event
+    Adapter->>Adapter: 2. Extract content
+
+    Adapter->>Dedup: Send content
+    Dedup->>Dedup: 1. Hash content
+    Dedup->>Dedup: 2. Check if exists
+
+    Dedup->>Storage: Store context
+    Storage->>Storage: 1. Insert context
+    Storage->>Storage: 2. Update FTS
+    Storage->>Storage: 3. Queue embedding
+
+    Storage->>Worker: Enqueue
+    Worker->>Worker: 1. Batch contexts
+    Worker->>Worker: 2. Call OpenAI
+    Worker->>Worker: 3. Update vector DB
 ```
 
 **Latency Breakdown**:
@@ -402,50 +404,41 @@ function calculateScore(context: Context, query: string): number {
 
 ### Query Flow
 
-```
-┌─────────────────┐
-│ OpenClaw Agent  │
-│ queries context │
-└────────┬────────┘
-         │
-         ▼ HTTP POST /api/v1/context/query
-┌─────────────────────┐
-│ API Gateway         │
-│ 1. Authenticate     │
-│ 2. Validate params  │
-└────────┬────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│ Retrieval Service   │
-│ 1. Check cache      │
-└────────┬────────────┘
-         │
-         ▼ (cache miss)
-┌───────────────────────────┐
-│ Hybrid Search             │
-│ ┌──────┐ ┌────┐ ┌──────┐ │
-│ │Vector│ │FTS │ │Recent│ │
-│ │ (50ms│ │(10 │ │ (5ms)│ │
-│ └──────┘ └────┘ └──────┘ │
-└────────┬──────────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│ Result Merger       │
-│ 1. Deduplicate      │
-│ 2. Score & rank     │
-│ 3. Pack to limit    │
-└────────┬────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│ Response            │
-│ {                   │
-│   contexts: [...],  │
-│   metadata: {...}   │
-│ }                   │
-└─────────────────────┘
+```mermaid
+sequenceDiagram
+    participant Agent as OpenClaw Agent
+    participant Gateway as API Gateway
+    participant Retrieval as Retrieval Service
+    participant Hybrid as Hybrid Search
+    participant Merger as Result Merger
+
+    Agent->>Gateway: POST /api/v1/context/query
+    Gateway->>Gateway: 1. Authenticate
+    Gateway->>Gateway: 2. Validate params
+
+    Gateway->>Retrieval: Query request
+    Retrieval->>Retrieval: 1. Check cache
+
+    Note over Retrieval: Cache miss
+
+    Retrieval->>Hybrid: Execute search
+
+    par Parallel Searches
+        Hybrid->>Hybrid: Vector (50ms)
+    and
+        Hybrid->>Hybrid: FTS (10ms)
+    and
+        Hybrid->>Hybrid: Recent (5ms)
+    end
+
+    Hybrid->>Merger: Combined results
+
+    Merger->>Merger: 1. Deduplicate
+    Merger->>Merger: 2. Score & rank
+    Merger->>Merger: 3. Pack to limit
+
+    Merger->>Gateway: Final results
+    Gateway-->>Agent: Response JSON<br/>{contexts, metadata}
 ```
 
 **Latency Breakdown**:
@@ -677,22 +670,22 @@ return results;
 
 ### MVP: Sidecar Pattern
 
-```
-┌────────────────────────────────────┐
-│         Host Machine               │
-├────────────────────────────────────┤
-│                                    │
-│  ┌─────────────┐  ┌─────────────┐ │
-│  │  OpenClaw   │─▶│   Mneme     │ │
-│  │  Gateway    │  │  (Sidecar)  │ │
-│  └─────────────┘  └─────────────┘ │
-│         │               │          │
-│         │               ▼          │
-│         │         ┌──────────┐    │
-│         │         │ SQLite   │    │
-│         │         │ Database │    │
-│         │         └──────────┘    │
-└────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph Host["Host Machine"]
+        OPENCLAW[OpenClaw Gateway]
+        MNEME[Mneme Sidecar]
+        SQLITE[(SQLite Database)]
+
+        OPENCLAW -->|HTTP| MNEME
+        MNEME --> SQLITE
+    end
+
+    USER[User] -->|localhost:18789| OPENCLAW
+
+    style OPENCLAW fill:#7B68EE,stroke:#5A4CB8,stroke-width:2px,color:#fff
+    style MNEME fill:#4A90E2,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style SQLITE fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
 ```
 
 **docker-compose.yml**:
@@ -722,30 +715,28 @@ services:
 
 ### Production: Standalone Service
 
-```
-┌─────────────────────────────────────┐
-│         Load Balancer               │
-└────────────┬────────────────────────┘
-             │
-    ┌────────┴────────┐
-    ▼                 ▼
-┌─────────┐      ┌─────────┐
-│ Mneme   │      │ Mneme   │
-│ API (1) │      │ API (2) │
-└────┬────┘      └────┬────┘
-     │                │
-     └────────┬───────┘
-              ▼
-    ┌──────────────────┐
-    │   PostgreSQL     │
-    │   + pgvector     │
-    └──────────────────┘
-              │
-              ▼
-    ┌──────────────────┐
-    │   Redis          │
-    │   (Cache/Queue)  │
-    └──────────────────┘
+```mermaid
+graph TB
+    LB[Load Balancer]
+
+    subgraph API["Mneme API Cluster"]
+        API1[Mneme API 1]
+        API2[Mneme API 2]
+    end
+
+    PG[(PostgreSQL<br/>+ pgvector)]
+    REDIS[(Redis<br/>Cache/Queue)]
+
+    INTERNET[Internet] --> LB
+    LB --> API1 & API2
+    API1 & API2 --> PG
+    API1 & API2 --> REDIS
+
+    style LB fill:#50C878,stroke:#3A9B5C,stroke-width:2px,color:#fff
+    style API1 fill:#4A90E2,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style API2 fill:#4A90E2,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style PG fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style REDIS fill:#3498DB,stroke:#2874A6,stroke-width:2px,color:#fff
 ```
 
 ---
