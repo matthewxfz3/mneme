@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  mneme:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mneme
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/data
+      - ./config:/config
+    environment:
+      - NODE_ENV=production
+      - MNEME_PORT=8080
+      - MNEME_HOST=0.0.0.0
+      - MNEME_DB_PATH=/data/mneme.db
+      - MNEME_LOG_LEVEL=info
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Redis for caching (comment out for MVP)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: mneme-redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis-data:/data
+  #   restart: unless-stopped
+
+# volumes:
+#   redis-data:
