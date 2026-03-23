@@ -25,6 +25,7 @@ export interface QueueOptions {
   maxRetries?: number;
   retryDelay?: number;
   pollInterval?: number;
+  maxQueueSize?: number;
 }
 
 /**
@@ -46,6 +47,7 @@ export class EmbeddingQueue {
       maxRetries: options.maxRetries || 3,
       retryDelay: options.retryDelay || 5000,
       pollInterval: options.pollInterval || 10000,
+      maxQueueSize: options.maxQueueSize || 10000,
     };
 
     this.initializeQueue();
@@ -100,6 +102,19 @@ export class EmbeddingQueue {
 
     if (existing) {
       return existing.task_id;
+    }
+
+    // Check queue size limit (provides backpressure)
+    const queueSize = this.db.prepare(`
+      SELECT COUNT(*) as count FROM embedding_queue
+      WHERE status = 'pending'
+    `).get() as { count: number };
+
+    if (queueSize.count >= this.options.maxQueueSize) {
+      throw new Error(
+        `Embedding queue full (${queueSize.count}/${this.options.maxQueueSize}). ` +
+        `Please wait for processing to complete or increase maxQueueSize.`
+      );
     }
 
     // Add to queue

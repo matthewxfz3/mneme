@@ -360,27 +360,47 @@ export class SummarizationService {
   }
 
   /**
-   * Get conversation messages
+   * Get conversation messages with optional pagination
    */
-  private async getConversationMessages(conversationId: string): Promise<Message[]> {
-    const rows = this.db.prepare(`
+  private async getConversationMessages(
+    conversationId: string,
+    options: {
+      limit?: number;
+      offset?: number;
+    } = {}
+  ): Promise<Message[]> {
+    const { limit, offset = 0 } = options;
+
+    let query = `
       SELECT * FROM messages
       WHERE conversation_id = ?
       ORDER BY sequence_num ASC
-    `).all(conversationId) as any[];
+    `;
+
+    if (limit !== undefined) {
+      query += ` LIMIT ? OFFSET ?`;
+    }
+
+    const stmt = this.db.prepare(query);
+    const params = limit !== undefined
+      ? [conversationId, limit, offset]
+      : [conversationId];
+
+    const rows = stmt.all(...params) as any[];
 
     return rows.map(row => this.parseMessage(row));
   }
 
   /**
    * Get all messages (for global personalization)
+   * Limited to recent messages to prevent memory issues
    */
-  private async getAllMessages(): Promise<Message[]> {
+  private async getAllMessages(limit: number = 1000): Promise<Message[]> {
     const rows = this.db.prepare(`
       SELECT * FROM messages
       ORDER BY created_at DESC
-      LIMIT 1000
-    `).all() as any[];
+      LIMIT ?
+    `).all(limit) as any[];
 
     return rows.map(row => this.parseMessage(row));
   }
@@ -412,52 +432,62 @@ export class SummarizationService {
   }
 
   /**
-   * Store user preferences
+   * Store user preferences in batch transaction
+   * Reduces N+1 queries by batching all operations in single transaction
    */
   private async storePreferences(preferences: UserPreference[]): Promise<void> {
-    for (const pref of preferences) {
-      // Check if exists
-      const existing = this.db.prepare(`
-        SELECT * FROM user_preferences
-        WHERE category = ? AND key = ? AND value = ?
-      `).get(pref.category, pref.key, pref.value) as any;
+    if (preferences.length === 0) return;
 
-      if (existing) {
-        // Update
-        this.db.prepare(`
-          UPDATE user_preferences
-          SET
-            confidence = ?,
-            evidence_count = ?,
-            last_observed = ?,
-            metadata = ?
-          WHERE preference_id = ?
-        `).run(
-          pref.confidence,
-          pref.evidence_count,
-          pref.last_observed,
-          pref.metadata ? JSON.stringify(pref.metadata) : null,
-          existing.preference_id
-        );
-      } else {
-        // Insert
-        this.db.prepare(`
-          INSERT INTO user_preferences (
-            category, key, value, confidence, evidence_count,
-            first_observed, last_observed, metadata
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `).run(
-          pref.category,
-          pref.key,
-          pref.value,
-          pref.confidence,
-          pref.evidence_count,
-          pref.first_observed,
-          pref.last_observed,
-          pref.metadata ? JSON.stringify(pref.metadata) : null
-        );
+    const transaction = this.db.transaction(() => {
+      const selectStmt = this.db.prepare(`
+        SELECT preference_id FROM user_preferences
+        WHERE category = ? AND key = ? AND value = ?
+      `);
+
+      const updateStmt = this.db.prepare(`
+        UPDATE user_preferences
+        SET
+          confidence = ?,
+          evidence_count = ?,
+          last_observed = ?,
+          metadata = ?
+        WHERE preference_id = ?
+      `);
+
+      const insertStmt = this.db.prepare(`
+        INSERT INTO user_preferences (
+          category, key, value, confidence, evidence_count,
+          first_observed, last_observed, metadata
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+
+      for (const pref of preferences) {
+        const existing = selectStmt.get(pref.category, pref.key, pref.value) as { preference_id: number } | undefined;
+
+        if (existing) {
+          updateStmt.run(
+            pref.confidence,
+            pref.evidence_count,
+            pref.last_observed,
+            pref.metadata ? JSON.stringify(pref.metadata) : null,
+            existing.preference_id
+          );
+        } else {
+          insertStmt.run(
+            pref.category,
+            pref.key,
+            pref.value,
+            pref.confidence,
+            pref.evidence_count,
+            pref.first_observed,
+            pref.last_observed,
+            pref.metadata ? JSON.stringify(pref.metadata) : null
+          );
+        }
       }
-    }
+    });
+
+    transaction();
   }
 
   /**

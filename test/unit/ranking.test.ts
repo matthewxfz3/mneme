@@ -415,6 +415,257 @@ describe('ResultRanker', () => {
       expect(explanation).toContain('Recency:');
     });
   });
+
+  describe('calculatePrecisionAtK', () => {
+    it('should calculate precision correctly when all top-K are relevant', () => {
+      const results = createMockSearchResults(['msg-1', 'msg-2', 'msg-3', 'msg-4']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set(['msg-1', 'msg-2', 'msg-3', 'msg-4']);
+
+      const precision = ResultRanker.calculatePrecisionAtK(results, relevantIds, 3);
+
+      expect(precision).toBe(1.0); // All 3 retrieved are relevant
+    });
+
+    it('should calculate precision correctly with partial relevance', () => {
+      const results = createMockSearchResults(['msg-1', 'msg-2', 'msg-3', 'msg-4']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set(['msg-1', 'msg-3']); // 2 out of 4 relevant
+
+      const precision = ResultRanker.calculatePrecisionAtK(results, relevantIds, 4);
+
+      expect(precision).toBe(0.5); // 2 relevant / 4 retrieved = 0.5
+    });
+
+    it('should return 0 when no results are relevant', () => {
+      const results = createMockSearchResults(['msg-1', 'msg-2', 'msg-3']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set(['msg-99']);
+
+      const precision = ResultRanker.calculatePrecisionAtK(results, relevantIds, 3);
+
+      expect(precision).toBe(0);
+    });
+
+    it('should handle k=1', () => {
+      const results = createMockSearchResults(['msg-1', 'msg-2', 'msg-3']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set(['msg-1']);
+
+      const precision = ResultRanker.calculatePrecisionAtK(results, relevantIds, 1);
+
+      expect(precision).toBe(1.0); // First result is relevant
+    });
+
+    it('should handle k larger than result set', () => {
+      const results = createMockSearchResults(['msg-1', 'msg-2']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set(['msg-1', 'msg-2']);
+
+      const precision = ResultRanker.calculatePrecisionAtK(results, relevantIds, 10);
+
+      expect(precision).toBe(1.0); // Both results are relevant
+    });
+
+    it('should return 0 for k=0 or negative k', () => {
+      const results = createMockSearchResults(['msg-1']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set(['msg-1']);
+
+      expect(ResultRanker.calculatePrecisionAtK(results, relevantIds, 0)).toBe(0);
+      expect(ResultRanker.calculatePrecisionAtK(results, relevantIds, -1)).toBe(0);
+    });
+  });
+
+  describe('calculateRecallAtK', () => {
+    it('should calculate recall correctly when all relevant retrieved', () => {
+      const results = createMockSearchResults(['msg-1', 'msg-2', 'msg-3', 'msg-4']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set(['msg-1', 'msg-2']);
+
+      const recall = ResultRanker.calculateRecallAtK(results, relevantIds, 4);
+
+      expect(recall).toBe(1.0); // Both relevant messages retrieved
+    });
+
+    it('should calculate recall correctly with partial retrieval', () => {
+      const results = createMockSearchResults(['msg-1', 'msg-2', 'msg-3']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set(['msg-1', 'msg-2', 'msg-4', 'msg-5']); // 4 relevant total
+
+      const recall = ResultRanker.calculateRecallAtK(results, relevantIds, 3);
+
+      expect(recall).toBe(0.5); // 2 retrieved / 4 total relevant = 0.5
+    });
+
+    it('should return 0 when no relevant results retrieved', () => {
+      const results = createMockSearchResults(['msg-1', 'msg-2']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set(['msg-99', 'msg-98']);
+
+      const recall = ResultRanker.calculateRecallAtK(results, relevantIds, 2);
+
+      expect(recall).toBe(0);
+    });
+
+    it('should handle k smaller than total relevant', () => {
+      const results = createMockSearchResults(['msg-1', 'msg-2', 'msg-3', 'msg-4']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set(['msg-1', 'msg-2', 'msg-3', 'msg-4']);
+
+      const recall = ResultRanker.calculateRecallAtK(results, relevantIds, 2);
+
+      expect(recall).toBe(0.5); // 2 retrieved / 4 total relevant = 0.5
+    });
+
+    it('should return 0 when no relevant documents exist', () => {
+      const results = createMockSearchResults(['msg-1', 'msg-2']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set<string>([]);
+
+      const recall = ResultRanker.calculateRecallAtK(results, relevantIds, 2);
+
+      expect(recall).toBe(0);
+    });
+  });
+
+  describe('calculateContextPrecision', () => {
+    it('should calculate context precision correctly', () => {
+      const retrieved = createMockSearchResults(['msg-1', 'msg-2', 'msg-3', 'msg-4']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set(['msg-1', 'msg-3', 'msg-4']); // 3 out of 4 relevant
+
+      const precision = ResultRanker.calculateContextPrecision(retrieved, relevantIds);
+
+      expect(precision).toBe(0.75); // 3 relevant / 4 retrieved = 0.75
+    });
+
+    it('should return 1.0 when all retrieved are relevant', () => {
+      const retrieved = createMockSearchResults(['msg-1', 'msg-2']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set(['msg-1', 'msg-2', 'msg-3']);
+
+      const precision = ResultRanker.calculateContextPrecision(retrieved, relevantIds);
+
+      expect(precision).toBe(1.0);
+    });
+
+    it('should return 0 when no retrieved are relevant', () => {
+      const retrieved = createMockSearchResults(['msg-1', 'msg-2']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set(['msg-99', 'msg-98']);
+
+      const precision = ResultRanker.calculateContextPrecision(retrieved, relevantIds);
+
+      expect(precision).toBe(0);
+    });
+
+    it('should return 0 when no results retrieved', () => {
+      const retrieved: RankedResult[] = [];
+      const relevantIds = new Set(['msg-1', 'msg-2']);
+
+      const precision = ResultRanker.calculateContextPrecision(retrieved, relevantIds);
+
+      expect(precision).toBe(0);
+    });
+  });
+
+  describe('calculateContextRecall', () => {
+    it('should calculate context recall correctly', () => {
+      const retrieved = createMockSearchResults(['msg-1', 'msg-2', 'msg-3']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set(['msg-1', 'msg-2', 'msg-4', 'msg-5']); // 4 total relevant
+
+      const recall = ResultRanker.calculateContextRecall(retrieved, relevantIds);
+
+      expect(recall).toBe(0.5); // 2 retrieved / 4 total relevant = 0.5
+    });
+
+    it('should return 1.0 when all relevant retrieved', () => {
+      const retrieved = createMockSearchResults(['msg-1', 'msg-2', 'msg-3']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set(['msg-1', 'msg-2']);
+
+      const recall = ResultRanker.calculateContextRecall(retrieved, relevantIds);
+
+      expect(recall).toBe(1.0);
+    });
+
+    it('should return 0 when no relevant retrieved', () => {
+      const retrieved = createMockSearchResults(['msg-1', 'msg-2']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set(['msg-99', 'msg-98']);
+
+      const recall = ResultRanker.calculateContextRecall(retrieved, relevantIds);
+
+      expect(recall).toBe(0);
+    });
+
+    it('should return 0 when no relevant documents exist', () => {
+      const retrieved = createMockSearchResults(['msg-1', 'msg-2']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set<string>([]);
+
+      const recall = ResultRanker.calculateContextRecall(retrieved, relevantIds);
+
+      expect(recall).toBe(0);
+    });
+  });
+
+  describe('calculateF1AtK', () => {
+    it('should calculate F1 score correctly', () => {
+      const results = createMockSearchResults(['msg-1', 'msg-2', 'msg-3', 'msg-4']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set(['msg-1', 'msg-2', 'msg-3', 'msg-4', 'msg-5', 'msg-6']);
+
+      // P@4 = 4/4 = 1.0, R@4 = 4/6 = 0.667
+      // F1 = 2 * (1.0 * 0.667) / (1.0 + 0.667) = 0.8
+      const f1 = ResultRanker.calculateF1AtK(results, relevantIds, 4);
+
+      expect(f1).toBeCloseTo(0.8, 2);
+    });
+
+    it('should return 1.0 for perfect precision and recall', () => {
+      const results = createMockSearchResults(['msg-1', 'msg-2']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set(['msg-1', 'msg-2']);
+
+      const f1 = ResultRanker.calculateF1AtK(results, relevantIds, 2);
+
+      expect(f1).toBe(1.0);
+    });
+
+    it('should return 0 when precision and recall are both 0', () => {
+      const results = createMockSearchResults(['msg-1', 'msg-2']).map(
+        (r, i) => ({ ...r, rank: i + 1 })
+      );
+      const relevantIds = new Set(['msg-99', 'msg-98']);
+
+      const f1 = ResultRanker.calculateF1AtK(results, relevantIds, 2);
+
+      expect(f1).toBe(0);
+    });
+  });
 });
 
 describe('BatchRanker', () => {

@@ -1,0 +1,302 @@
+{
+  "version": "0.2.0",
+  "timestamp": "2026-03-23",
+  "aggregate": {
+    "totalTestCases": 10,
+    "averageMetrics": {
+      "precision_at_5": 0.1,
+      "recall_at_10": 0.05,
+      "context_precision": 0.1,
+      "context_recall": 0.05,
+      "mrr": 0.1,
+      "ndcg_at_10": 0.1,
+      "f1_at_5": 0.06666666666666667
+    },
+    "byScenario": {
+      "technical": {
+        "count": 4,
+        "avgPrecision": 0.25,
+        "avgRecall": 0.125,
+        "avgContextPrecision": 0.25,
+        "avgContextRecall": 0.125
+      },
+      "temporal": {
+        "count": 2,
+        "avgPrecision": 0,
+        "avgRecall": 0,
+        "avgContextPrecision": 0,
+        "avgContextRecall": 0
+      },
+      "multi-hop": {
+        "count": 2,
+        "avgPrecision": 0,
+        "avgRecall": 0,
+        "avgContextPrecision": 0,
+        "avgContextRecall": 0
+      },
+      "disambiguation": {
+        "count": 2,
+        "avgPrecision": 0,
+        "avgRecall": 0,
+        "avgContextPrecision": 0,
+        "avgContextRecall": 0
+      }
+    },
+    "failureModes": [
+      {
+        "testCaseId": "tech-001",
+        "scenario": "technical",
+        "query": "How do I fix the database connection timeout error?",
+        "issue": "Low precision (0.00) - too many irrelevant results in top 5",
+        "precision": 0
+      },
+      {
+        "testCaseId": "tech-003",
+        "scenario": "technical",
+        "query": "Why is my React component re-rendering infinitely?",
+        "issue": "Low precision (0.00) - too many irrelevant results in top 5",
+        "precision": 0
+      },
+      {
+        "testCaseId": "temporal-001",
+        "scenario": "temporal",
+        "query": "What did we decide about the authentication approach today?",
+        "issue": "Low precision (0.00) - too many irrelevant results in top 5",
+        "precision": 0
+      },
+      {
+        "testCaseId": "temporal-002",
+        "scenario": "temporal",
+        "query": "What API rate limiting strategy did we discuss last week?",
+        "issue": "Low precision (0.00) - too many irrelevant results in top 5",
+        "precision": 0
+      },
+      {
+        "testCaseId": "multi-hop-001",
+        "scenario": "multi-hop",
+        "query": "What was the solution to the bug Sarah reported?",
+        "issue": "Low precision (0.00) - too many irrelevant results in top 5",
+        "precision": 0
+      },
+      {
+        "testCaseId": "multi-hop-002",
+        "scenario": "multi-hop",
+        "query": "Why did we choose MongoDB over PostgreSQL for this project?",
+        "issue": "Low precision (0.00) - too many irrelevant results in top 5",
+        "precision": 0
+      },
+      {
+        "testCaseId": "disambig-001",
+        "scenario": "disambiguation",
+        "query": "How do I configure CORS for the API server?",
+        "issue": "Low precision (0.00) - too many irrelevant results in top 5",
+        "precision": 0
+      },
+      {
+        "testCaseId": "disambig-002",
+        "scenario": "disambiguation",
+        "query": "How do I deploy to production on AWS?",
+        "issue": "Low precision (0.00) - too many irrelevant results in top 5",
+        "precision": 0
+      }
+    ]
+  },
+  "detailed": [
+    {
+      "testCaseId": "tech-001",
+      "scenario": "technical",
+      "query": "How do I fix the database connection timeout error?",
+      "description": "Should retrieve messages about database timeouts, not general database discussions",
+      "metrics": {
+        "precision_at_5": 0,
+        "recall_at_10": 0,
+        "context_precision": 0,
+        "context_recall": 0,
+        "mrr": 0,
+        "ndcg_at_10": 0,
+        "f1_at_5": 0
+      },
+      "retrievedCount": 0,
+      "relevantCount": 3,
+      "topResults": [],
+      "failureMode": "Low precision (0.00) - too many irrelevant results in top 5"
+    },
+    {
+      "testCaseId": "tech-002",
+      "scenario": "technical",
+      "query": "What is the difference between JWT and session-based authentication?",
+      "description": "Should retrieve comparative discussion, not isolated mentions",
+      "metrics": {
+        "precision_at_5": 1,
+        "recall_at_10": 0.5,
+        "context_precision": 1,
+        "context_recall": 0.5,
+        "mrr": 1,
+        "ndcg_at_10": 1,
+        "f1_at_5": 0.6666666666666666
+      },
+      "retrievedCount": 1,
+      "relevantCount": 2,
+      "topResults": [
+        {
+          "message_id": "msg-101",
+          "score": 0.29531193280195345,
+          "rank": 1,
+          "isRelevant": true,
+          "preview": "What is the difference between JWT and session-based authent..."
+        }
+      ]
+    },
+    {
+      "testCaseId": "tech-003",
+      "scenario": "technical",
+      "query": "Why is my React component re-rendering infinitely?",
+      "description": "Should retrieve infinite re-render discussions and solutions",
+      "metrics": {
+        "precision_at_5": 0,
+        "recall_at_10": 0,
+        "context_precision": 0,
+        "context_recall": 0,
+        "mrr": 0,
+        "ndcg_at_10": 0,
+        "f1_at_5": 0
+      },
+      "retrievedCount": 0,
+      "relevantCount": 4,
+      "topResults": [],
+      "failureMode": "Low precision (0.00) - too many irrelevant results in top 5"
+    },
+    {
+      "testCaseId": "temporal-001",
+      "scenario": "temporal",
+      "query": "What did we decide about the authentication approach today?",
+      "description": "Should prioritize recent messages about authentication decisions",
+      "metrics": {
+        "precision_at_5": 0,
+        "recall_at_10": 0,
+        "context_precision": 0,
+        "context_recall": 0,
+        "mrr": 0,
+        "ndcg_at_10": 0,
+        "f1_at_5": 0
+      },
+      "retrievedCount": 0,
+      "relevantCount": 4,
+      "topResults": [],
+      "failureMode": "Low precision (0.00) - too many irrelevant results in top 5"
+    },
+    {
+      "testCaseId": "temporal-002",
+      "scenario": "temporal",
+      "query": "What API rate limiting strategy did we discuss last week?",
+      "description": "Should retrieve week-old messages about rate limiting",
+      "metrics": {
+        "precision_at_5": 0,
+        "recall_at_10": 0,
+        "context_precision": 0,
+        "context_recall": 0,
+        "mrr": 0,
+        "ndcg_at_10": 0,
+        "f1_at_5": 0
+      },
+      "retrievedCount": 0,
+      "relevantCount": 2,
+      "topResults": [],
+      "failureMode": "Low precision (0.00) - too many irrelevant results in top 5"
+    },
+    {
+      "testCaseId": "multi-hop-001",
+      "scenario": "multi-hop",
+      "query": "What was the solution to the bug Sarah reported?",
+      "description": "Should connect Sarah's bug report with subsequent discussion and solution",
+      "metrics": {
+        "precision_at_5": 0,
+        "recall_at_10": 0,
+        "context_precision": 0,
+        "context_recall": 0,
+        "mrr": 0,
+        "ndcg_at_10": 0,
+        "f1_at_5": 0
+      },
+      "retrievedCount": 0,
+      "relevantCount": 5,
+      "topResults": [],
+      "failureMode": "Low precision (0.00) - too many irrelevant results in top 5"
+    },
+    {
+      "testCaseId": "multi-hop-002",
+      "scenario": "multi-hop",
+      "query": "Why did we choose MongoDB over PostgreSQL for this project?",
+      "description": "Should retrieve the discussion that led to the database decision",
+      "metrics": {
+        "precision_at_5": 0,
+        "recall_at_10": 0,
+        "context_precision": 0,
+        "context_recall": 0,
+        "mrr": 0,
+        "ndcg_at_10": 0,
+        "f1_at_5": 0
+      },
+      "retrievedCount": 0,
+      "relevantCount": 5,
+      "topResults": [],
+      "failureMode": "Low precision (0.00) - too many irrelevant results in top 5"
+    },
+    {
+      "testCaseId": "disambig-001",
+      "scenario": "disambiguation",
+      "query": "How do I configure CORS for the API server?",
+      "description": "Should retrieve API CORS config, not frontend or general CORS discussions",
+      "metrics": {
+        "precision_at_5": 0,
+        "recall_at_10": 0,
+        "context_precision": 0,
+        "context_recall": 0,
+        "mrr": 0,
+        "ndcg_at_10": 0,
+        "f1_at_5": 0
+      },
+      "retrievedCount": 0,
+      "relevantCount": 2,
+      "topResults": [],
+      "failureMode": "Low precision (0.00) - too many irrelevant results in top 5"
+    },
+    {
+      "testCaseId": "disambig-002",
+      "scenario": "disambiguation",
+      "query": "How do I deploy to production on AWS?",
+      "description": "Should retrieve AWS deployment specifics, not general deployment or other platforms",
+      "metrics": {
+        "precision_at_5": 0,
+        "recall_at_10": 0,
+        "context_precision": 0,
+        "context_recall": 0,
+        "mrr": 0,
+        "ndcg_at_10": 0,
+        "f1_at_5": 0
+      },
+      "retrievedCount": 0,
+      "relevantCount": 2,
+      "topResults": [],
+      "failureMode": "Low precision (0.00) - too many irrelevant results in top 5"
+    },
+    {
+      "testCaseId": "edge-001",
+      "scenario": "technical",
+      "query": "How do I implement blockchain smart contracts?",
+      "description": "No relevant messages exist - should return empty or low scores",
+      "metrics": {
+        "precision_at_5": 0,
+        "recall_at_10": 0,
+        "context_precision": 0,
+        "context_recall": 0,
+        "mrr": 0,
+        "ndcg_at_10": 0,
+        "f1_at_5": 0
+      },
+      "retrievedCount": 0,
+      "relevantCount": 0,
+      "topResults": []
+    }
+  ]
+}

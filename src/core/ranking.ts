@@ -259,6 +259,107 @@ export class ResultRanker {
   }
 
   /**
+   * Calculate Precision@K
+   * Measures what fraction of top-K retrieved results are relevant
+   */
+  static calculatePrecisionAtK(
+    results: RankedResult[],
+    relevantIds: Set<string>,
+    k: number
+  ): number {
+    if (k <= 0 || results.length === 0) {
+      return 0;
+    }
+
+    const topK = results.slice(0, k);
+    const relevantCount = topK.filter(result =>
+      relevantIds.has(result.message.message_id)
+    ).length;
+
+    return relevantCount / topK.length;
+  }
+
+  /**
+   * Calculate Recall@K
+   * Measures what fraction of all relevant results are in top-K
+   */
+  static calculateRecallAtK(
+    results: RankedResult[],
+    relevantIds: Set<string>,
+    k: number
+  ): number {
+    if (relevantIds.size === 0 || results.length === 0) {
+      return 0;
+    }
+
+    const topK = results.slice(0, k);
+    const retrievedRelevant = topK.filter(result =>
+      relevantIds.has(result.message.message_id)
+    ).length;
+
+    return retrievedRelevant / relevantIds.size;
+  }
+
+  /**
+   * Calculate Context Precision
+   * RAG-specific metric: Average precision of retrieved messages
+   * Measures: "Of the messages we retrieved, how many were actually relevant?"
+   */
+  static calculateContextPrecision(
+    retrieved: RankedResult[],
+    relevantIds: Set<string>
+  ): number {
+    if (retrieved.length === 0) {
+      return 0;
+    }
+
+    const relevantCount = retrieved.filter(result =>
+      relevantIds.has(result.message.message_id)
+    ).length;
+
+    return relevantCount / retrieved.length;
+  }
+
+  /**
+   * Calculate Context Recall
+   * RAG-specific metric: Coverage of relevant messages
+   * Measures: "Of all relevant messages, how many did we retrieve?"
+   */
+  static calculateContextRecall(
+    retrieved: RankedResult[],
+    relevantIds: Set<string>
+  ): number {
+    if (relevantIds.size === 0) {
+      return 0;
+    }
+
+    const retrievedRelevant = retrieved.filter(result =>
+      relevantIds.has(result.message.message_id)
+    ).length;
+
+    return retrievedRelevant / relevantIds.size;
+  }
+
+  /**
+   * Calculate F1@K score
+   * Harmonic mean of Precision@K and Recall@K
+   */
+  static calculateF1AtK(
+    results: RankedResult[],
+    relevantIds: Set<string>,
+    k: number
+  ): number {
+    const precision = this.calculatePrecisionAtK(results, relevantIds, k);
+    const recall = this.calculateRecallAtK(results, relevantIds, k);
+
+    if (precision + recall === 0) {
+      return 0;
+    }
+
+    return (2 * precision * recall) / (precision + recall);
+  }
+
+  /**
    * Explain ranking for a specific result
    */
   static explainRanking(result: RankedResult): string {

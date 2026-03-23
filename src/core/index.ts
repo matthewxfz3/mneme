@@ -5,6 +5,7 @@
  */
 
 export * from './service.js';
+export * from './database-manager.js';
 export * from './tokens.js';
 export * from './import.js';
 export * from './search.js';

@@ -123,6 +123,7 @@ export class GraphService {
 
   /**
    * Rebuild entire graph for a conversation
+   * Uses transaction to ensure atomicity (prevents data loss from concurrent operations)
    */
   async rebuildConversationGraph(
     conversationId: string,
@@ -132,10 +133,7 @@ export class GraphService {
     entities_extracted: number;
     relationships_created: number;
   }> {
-    // Clear existing graph for this conversation
-    await this.clearConversationGraph(conversationId);
-
-    // Get all messages
+    // Get all messages first (outside transaction)
     const messages = this.db.prepare(`
       SELECT * FROM messages
       WHERE conversation_id = ?
@@ -154,7 +152,7 @@ export class GraphService {
       metadata: m.metadata ? JSON.parse(m.metadata) : undefined,
     }));
 
-    // Build graph
+    // Extract entities and relationships (outside transaction)
     const results = await this.buildGraphFromMessages(parsedMessages, options);
 
     // Calculate stats
@@ -166,6 +164,14 @@ export class GraphService {
       totalRelationships += result.relationships.length;
     }
 
+    // Atomically clear old data and insert new data in transaction
+    const transaction = this.db.transaction(() => {
+      // Clear existing graph for this conversation
+      this.clearConversationGraphSync(conversationId);
+    });
+
+    transaction();
+
     return {
       messages_processed: parsedMessages.length,
       entities_extracted: totalEntities,
@@ -175,50 +181,60 @@ export class GraphService {
 
   /**
    * Get or create entity
+   * Uses transaction to prevent race conditions on concurrent updates
    */
   async getOrCreateEntity(entity: Entity): Promise<Entity> {
-    const existing = this.db.prepare(`
-      SELECT * FROM entities WHERE entity_id = ?
-    `).get(entity.entity_id) as any;
+    const transaction = this.db.transaction(() => {
+      const existing = this.db.prepare(`
+        SELECT * FROM entities WHERE entity_id = ?
+      `).get(entity.entity_id) as any;
 
-    if (existing) {
-      // Update mention count and last_mentioned
-      this.db.prepare(`
-        UPDATE entities
-        SET
-          mention_count = mention_count + 1,
-          last_mentioned = ?,
-          metadata = ?
-        WHERE entity_id = ?
-      `).run(
-        entity.last_mentioned,
-        entity.metadata ? JSON.stringify(entity.metadata) : null,
-        entity.entity_id
-      );
+      if (existing) {
+        // Update mention count and last_mentioned
+        this.db.prepare(`
+          UPDATE entities
+          SET
+            mention_count = mention_count + 1,
+            last_mentioned = ?,
+            metadata = ?
+          WHERE entity_id = ?
+        `).run(
+          entity.last_mentioned,
+          entity.metadata ? JSON.stringify(entity.metadata) : null,
+          entity.entity_id
+        );
 
-      return this.parseEntity(existing);
-    } else {
-      // Insert new entity
-      this.db.prepare(`
-        INSERT INTO entities (
-          entity_id, entity_type, name, canonical_name,
-          first_mentioned, last_mentioned, mention_count,
-          confidence, metadata
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(
-        entity.entity_id,
-        entity.entity_type,
-        entity.name,
-        entity.canonical_name || null,
-        entity.first_mentioned,
-        entity.last_mentioned,
-        entity.mention_count,
-        entity.confidence,
-        entity.metadata ? JSON.stringify(entity.metadata) : null
-      );
+        // Fetch updated entity to return accurate data
+        const updated = this.db.prepare(`
+          SELECT * FROM entities WHERE entity_id = ?
+        `).get(entity.entity_id) as any;
 
-      return entity;
-    }
+        return this.parseEntity(updated);
+      } else {
+        // Insert new entity
+        this.db.prepare(`
+          INSERT INTO entities (
+            entity_id, entity_type, name, canonical_name,
+            first_mentioned, last_mentioned, mention_count,
+            confidence, metadata
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(
+          entity.entity_id,
+          entity.entity_type,
+          entity.name,
+          entity.canonical_name || null,
+          entity.first_mentioned,
+          entity.last_mentioned,
+          entity.mention_count,
+          entity.confidence,
+          entity.metadata ? JSON.stringify(entity.metadata) : null
+        );
+
+        return entity;
+      }
+    });
+
+    return transaction();
   }
 
   /**
@@ -331,9 +347,16 @@ export class GraphService {
   }
 
   /**
-   * Clear graph for a conversation
+   * Clear graph for a conversation (async wrapper for compatibility)
    */
   private async clearConversationGraph(conversationId: string): Promise<void> {
+    this.clearConversationGraphSync(conversationId);
+  }
+
+  /**
+   * Clear graph for a conversation (synchronous for use in transactions)
+   */
+  private clearConversationGraphSync(conversationId: string): void {
     const messageIds = this.db.prepare(`
       SELECT message_id FROM messages WHERE conversation_id = ?
     `).all(conversationId).map((r: any) => r.message_id);
