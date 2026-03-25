@@ -217,3 +217,104 @@ SELECT
 FROM messages m
 JOIN conversations c ON m.conversation_id = c.conversation_id
 ORDER BY m.created_at DESC;
+
+-- ============================================================================
+-- Friday: User Life Context
+-- ============================================================================
+
+-- Services/subscriptions the user pays for
+CREATE TABLE IF NOT EXISTS user_services (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  category TEXT,                    -- 'streaming', 'saas', 'utility', 'phone', 'insurance'
+  monthly_price REAL,
+  currency TEXT DEFAULT 'USD',
+  last_used TEXT,                   -- ISO date or null
+  usage_frequency TEXT,             -- 'daily', 'weekly', 'rarely', 'unknown'
+  source TEXT DEFAULT 'manual',     -- 'manual', 'email-scan', 'bank'
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  metadata TEXT                     -- JSON: extra fields per service
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_services_category ON user_services(category);
+CREATE INDEX IF NOT EXISTS idx_user_services_source ON user_services(source);
+
+-- Goals the user wants to achieve
+CREATE TABLE IF NOT EXISTS user_goals (
+  id TEXT PRIMARY KEY,
+  skill TEXT NOT NULL,              -- 'public speaking', 'spanish', 'python'
+  current_level TEXT,               -- 'beginner', 'intermediate', 'advanced'
+  target_level TEXT,
+  budget_monthly REAL,
+  hours_per_week REAL,
+  format_preference TEXT,           -- 'video', 'reading', 'practice', 'coaching', 'any'
+  status TEXT DEFAULT 'active',     -- 'active', 'paused', 'completed', 'abandoned'
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  metadata TEXT                     -- JSON
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_goals_status ON user_goals(status);
+
+-- User preferences (key-value)
+CREATE TABLE IF NOT EXISTS user_preferences (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+-- ============================================================================
+-- Friday: Research Findings
+-- ============================================================================
+
+-- Findings that Friday discovered for the user
+CREATE TABLE IF NOT EXISTS research_findings (
+  id TEXT PRIMARY KEY,
+  domain TEXT NOT NULL,              -- 'money', 'career', 'growth', 'admin', 'health'
+  type TEXT NOT NULL,                -- 'redundancy', 'cheaper_alternative', 'price_increase', 'unused', 'new_option'
+  title TEXT NOT NULL,               -- Short: "Grammarly is redundant with Claude Pro"
+  description TEXT NOT NULL,         -- Full explanation with evidence
+  impact_annual REAL,                -- Estimated annual savings/value in dollars
+  impact_type TEXT,                  -- 'cost_saving', 'time_saving', 'opportunity', 'risk_reduction'
+  confidence REAL,                   -- 0.0-1.0 how sure Friday is
+  status TEXT DEFAULT 'pending',     -- 'pending', 'presented', 'acted', 'dismissed', 'expired', 'snoozed'
+  source_urls TEXT,                  -- JSON array of URLs researched
+  action_options TEXT,               -- JSON array of {label, description, action_type}
+  related_service_id TEXT,           -- FK to user_services if applicable
+  presented_at INTEGER,              -- When shown to user
+  acted_at INTEGER,                  -- When user acted
+  dismissed_at INTEGER,              -- When user dismissed
+  user_response TEXT,                -- What the user said/chose
+  created_at INTEGER NOT NULL,
+  metadata TEXT,                     -- JSON
+  FOREIGN KEY (related_service_id) REFERENCES user_services(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_findings_domain ON research_findings(domain);
+CREATE INDEX IF NOT EXISTS idx_findings_status ON research_findings(status);
+CREATE INDEX IF NOT EXISTS idx_findings_created ON research_findings(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_findings_impact ON research_findings(impact_annual DESC);
+
+-- ============================================================================
+-- Friday: Research History
+-- ============================================================================
+
+-- Log of every research cycle Friday has run
+CREATE TABLE IF NOT EXISTS research_history (
+  id TEXT PRIMARY KEY,
+  domain TEXT NOT NULL,
+  target TEXT NOT NULL,              -- What was researched (service name, goal, etc.)
+  target_id TEXT,                    -- FK to user_services or user_goals if applicable
+  status TEXT NOT NULL,              -- 'completed', 'error', 'timeout', 'quota_exceeded'
+  findings_count INTEGER DEFAULT 0,
+  tokens_used INTEGER DEFAULT 0,
+  duration_ms INTEGER,
+  error TEXT,
+  created_at INTEGER NOT NULL,
+  metadata TEXT                      -- JSON: model used, sources checked, etc.
+);
+
+CREATE INDEX IF NOT EXISTS idx_research_domain ON research_history(domain);
+CREATE INDEX IF NOT EXISTS idx_research_target ON research_history(target);
+CREATE INDEX IF NOT EXISTS idx_research_created ON research_history(created_at DESC);
